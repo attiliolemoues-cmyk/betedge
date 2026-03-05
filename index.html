@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BetEdge" />
+  <meta name="theme-color" content="#060a14" />
+  <meta name="description" content="Modèle prédictif NBA · Rugby · Volley" />
+
+  <title>BetEdge</title>
+  <link rel="manifest" href="./manifest.json" />
+
+  <!-- Apple touch icons (inline SVG via data URI) -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' fill='%23060a14' rx='28'/><text x='50%25' y='55%25' font-size='100' text-anchor='middle' dominant-baseline='middle' fill='%2300e5b0'>◈</text></svg>" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root {
+      height: 100%;
+      background: #060a14;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+    }
+    body {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-thumb { background: #172034; border-radius: 3px; }
+    input, select, button { font-family: 'Outfit', sans-serif; }
+    input[type=range] { accent-color: #00e5b0; cursor: pointer; }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .fade { animation: fadeUp 0.3s ease; }
+    @keyframes glow { 0%,100%{box-shadow:0 0 8px rgba(0,229,176,.25)} 50%{box-shadow:0 0 22px rgba(0,229,176,.6)} }
+    .glow-card { animation: glow 2s infinite; }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    .spin { animation: spin 1s linear infinite; display:inline-block; }
+
+    /* Bottom nav mobile */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0; right: 0;
+      background: #0d1524;
+      border-top: 1px solid #172034;
+      display: flex;
+      padding-bottom: env(safe-area-inset-bottom);
+      z-index: 100;
+    }
+    .bottom-nav button {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 4px;
+      gap: 3px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #4a6080;
+      font-size: 10px;
+      font-weight: 600;
+      transition: color 0.15s;
+    }
+    .bottom-nav button.active { color: #00e5b0; }
+    .bottom-nav button .nav-icon { font-size: 18px; line-height: 1; }
+
+    /* Desktop nav */
+    .desktop-nav { display: none; }
+    @media (min-width: 768px) {
+      .bottom-nav { display: none; }
+      .desktop-nav { display: flex; }
+      .content-wrap { padding-bottom: 24px !important; }
+    }
+
+    /* Scrollable content */
+    .content-wrap {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 80px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, useRef } = React;
+
+    // ── DONNÉES STATIQUES ─────────────────────────────────────────────────────
+    const RUGBY_TOP14_UPDATED = "04 mar. 2026 (J18)";
+    const RUGBY_TOP14_STANDINGS = [
+      { name:"Toulouse",       wins:15, losses:3,  winPct:0.833, intNatPct:0.40 },
+      { name:"Bordeaux",       wins:13, losses:5,  winPct:0.722, intNatPct:0.35 },
+      { name:"La Rochelle",    wins:12, losses:6,  winPct:0.667, intNatPct:0.30 },
+      { name:"Lyon",           wins:11, losses:7,  winPct:0.611, intNatPct:0.22 },
+      { name:"Racing 92",      wins:10, losses:8,  winPct:0.556, intNatPct:0.28 },
+      { name:"Clermont",       wins:10, losses:8,  winPct:0.556, intNatPct:0.20 },
+      { name:"Montpellier",    wins:9,  losses:9,  winPct:0.500, intNatPct:0.18 },
+      { name:"Stade Français", wins:8,  losses:10, winPct:0.444, intNatPct:0.15 },
+      { name:"Castres",        wins:7,  losses:11, winPct:0.389, intNatPct:0.12 },
+      { name:"Toulon",         wins:7,  losses:11, winPct:0.389, intNatPct:0.20 },
+      { name:"Pau",            wins:6,  losses:12, winPct:0.333, intNatPct:0.10 },
+      { name:"Bayonne",        wins:5,  losses:13, winPct:0.278, intNatPct:0.08 },
+      { name:"Perpignan",      wins:4,  losses:14, winPct:0.222, intNatPct:0.06 },
+      { name:"Vannes",         wins:2,  losses:16, winPct:0.111, intNatPct:0.04 },
+    ];
+    const RUGBY_TOP14_GAMES = [
+      { home:"Toulouse",       away:"Racing 92",      date:"07 Mar", league:"Top 14" },
+      { home:"Bordeaux",       away:"La Rochelle",    date:"07 Mar", league:"Top 14" },
+      { home:"Clermont",       away:"Lyon",           date:"08 Mar", league:"Top 14" },
+      { home:"Toulon",         away:"Montpellier",    date:"08 Mar", league:"Top 14" },
+      { home:"Stade Français", away:"Castres",        date:"09 Mar", league:"Top 14" },
+    ];
+
+    const RUGBY_6N_UPDATED = "04 mar. 2026 (après J3)";
+    const RUGBY_6N_STANDINGS = [
+      { name:"France",     wins:3, losses:0, winPct:1.000 },
+      { name:"Écosse",     wins:2, losses:1, winPct:0.667 },
+      { name:"Irlande",    wins:2, losses:1, winPct:0.667 },
+      { name:"Angleterre", wins:1, losses:2, winPct:0.333 },
+      { name:"Italie",     wins:1, losses:2, winPct:0.333 },
+      { name:"Galles",     wins:0, losses:3, winPct:0.000 },
+    ];
+    const RUGBY_6N_GAMES = [
+      { home:"Irlande",    away:"Galles",     date:"06 Mar", league:"6 Nations" },
+      { home:"Écosse",     away:"France",     date:"07 Mar", league:"6 Nations" },
+      { home:"Italie",     away:"Angleterre", date:"07 Mar", league:"6 Nations" },
+      { home:"Irlande",    away:"Écosse",     date:"14 Mar", league:"6 Nations" },
+      { home:"Galles",     away:"Italie",     date:"14 Mar", league:"6 Nations" },
+      { home:"France",     away:"Angleterre", date:"14 Mar", league:"6 Nations" },
+    ];
+
+    const VOLLEYBALL_UPDATED = "04 mar. 2026";
+    const VOLLEYBALL_STANDINGS = [
+      { name:"Tours VB",       wins:18, losses:2,  winPct:0.900, intNatPct:0.35 },
+      { name:"Paris VB",       wins:16, losses:4,  winPct:0.800, intNatPct:0.30 },
+      { name:"Chaumont",       wins:14, losses:6,  winPct:0.700, intNatPct:0.25 },
+      { name:"Nice",           wins:12, losses:8,  winPct:0.600, intNatPct:0.15 },
+      { name:"Tourcoing",      wins:11, losses:9,  winPct:0.550, intNatPct:0.20 },
+      { name:"Montpellier VB", wins:10, losses:10, winPct:0.500, intNatPct:0.12 },
+      { name:"Poitiers",       wins:8,  losses:12, winPct:0.400, intNatPct:0.08 },
+      { name:"Nantes",         wins:7,  losses:13, winPct:0.350, intNatPct:0.06 },
+      { name:"Cambrai",        wins:5,  losses:15, winPct:0.250, intNatPct:0.05 },
+      { name:"Cannes",         wins:3,  losses:17, winPct:0.150, intNatPct:0.04 },
+    ];
+    const VOLLEYBALL_GAMES = [
+      { home:"Tours VB",       away:"Chaumont",   date:"06 Mar", league:"Ligue A" },
+      { home:"Paris VB",       away:"Nice",       date:"06 Mar", league:"Ligue A" },
+      { home:"Tourcoing",      away:"Poitiers",   date:"07 Mar", league:"Ligue A" },
+      { home:"Montpellier VB", away:"Nantes",     date:"07 Mar", league:"Ligue A" },
+    ];
+
+    const BOOKMAKERS = [
+      { id:"winamax", name:"Winamax", short:"WIN", color:"#e8400c" },
+      { id:"unibet",  name:"Unibet",  short:"UNI", color:"#147b45" },
+    ];
+
+    const INJURY_IMPACT = {
+      out_star:     { delta:-0.10 },
+      out_allstar:  { delta:-0.06 },
+      out_rotation: { delta:-0.025 },
+      questionable: { delta:-0.015 },
+      rest:         { delta:-0.07 },
+    };
+    const INT_WEEK_DELTA = -0.06;
+    const INT_WEEK_SPORTS = ["Rugby Top 14","Volleyball"];
+
+    function netRatingToStrength(nr) {
+      return Math.max(0.05, Math.min(0.95, (nr+15)/30));
+    }
+    function injuryDelta(teamName, injuryReport) {
+      return Math.max(-0.25, (injuryReport[teamName]||[]).reduce((sum,inj)=>{
+        if(inj.status==="rest")return sum+INJURY_IMPACT.rest.delta;
+        if(inj.status==="questionable")return sum+INJURY_IMPACT.questionable.delta;
+        return sum+(INJURY_IMPACT[`out_${inj.tier||"rotation"}`]||INJURY_IMPACT.out_rotation).delta;
+      },0));
+    }
+
+
+    const SPORTS = ["NBA","Rugby Top 14","6 Nations","Volleyball"];
+    const SPORT_META = {
+      "NBA":          { color:"#38bdf8", icon:"🏀" },
+      "Rugby Top 14": { color:"#ffcf44", icon:"🏉" },
+      "6 Nations":    { color:"#c084fc", icon:"🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
+      "Volleyball":   { color:"#00e5b0", icon:"🏐" },
+    };
+    const MANUAL_UPDATED = {
+      "Rugby Top 14": RUGBY_TOP14_UPDATED,
+      "6 Nations":    RUGBY_6N_UPDATED,
+      "Volleyball":   VOLLEYBALL_UPDATED,
+    };
+
+    const C = {
+      bg:"#060a14", card:"#0d1524", border:"#172034",
+      accent:"#00e5b0", accentDim:"rgba(0,229,176,0.12)",
+      red:"#ff4560", yellow:"#ffcf44", blue:"#38bdf8", purple:"#c084fc", orange:"#ff8c42",
+      text:"#e2e8f0", muted:"#4a6080", dim:"#7a95b0",
+    };
+
+    // ── NBA FALLBACK ──────────────────────────────────────────────────────────
+    const NBA_FALLBACK_STANDINGS = [
+      { name:"Oklahoma City Thunder",  wins:47, losses:15, winPct:0.758, conf:"WEST" },
+      { name:"Detroit Pistons",        wins:45, losses:14, winPct:0.763, conf:"EAST" },
+      { name:"San Antonio Spurs",      wins:43, losses:17, winPct:0.717, conf:"WEST" },
+      { name:"Boston Celtics",         wins:40, losses:20, winPct:0.667, conf:"EAST" },
+      { name:"New York Knicks",        wins:39, losses:22, winPct:0.639, conf:"EAST" },
+      { name:"Houston Rockets",        wins:37, losses:22, winPct:0.627, conf:"WEST" },
+      { name:"Minnesota Timberwolves", wins:38, losses:23, winPct:0.623, conf:"WEST" },
+      { name:"Denver Nuggets",         wins:37, losses:24, winPct:0.607, conf:"WEST" },
+      { name:"Los Angeles Lakers",     wins:36, losses:24, winPct:0.600, conf:"WEST" },
+      { name:"Toronto Raptors",        wins:35, losses:25, winPct:0.583, conf:"EAST" },
+      { name:"Phoenix Suns",           wins:34, losses:26, winPct:0.567, conf:"WEST" },
+      { name:"Philadelphia 76ers",     wins:33, losses:27, winPct:0.550, conf:"EAST" },
+      { name:"Miami Heat",             wins:32, losses:29, winPct:0.525, conf:"EAST" },
+      { name:"Orlando Magic",          wins:31, losses:28, winPct:0.525, conf:"EAST" },
+      { name:"Golden State Warriors",  wins:31, losses:29, winPct:0.517, conf:"WEST" },
+      { name:"Atlanta Hawks",          wins:31, losses:31, winPct:0.500, conf:"EAST" },
+      { name:"Charlotte Hornets",      wins:30, losses:31, winPct:0.492, conf:"EAST" },
+      { name:"LA Clippers",            wins:28, losses:31, winPct:0.475, conf:"WEST" },
+      { name:"Portland Trail Blazers", wins:29, losses:33, winPct:0.468, conf:"WEST" },
+      { name:"Milwaukee Bucks",        wins:26, losses:33, winPct:0.441, conf:"EAST" },
+      { name:"Chicago Bulls",          wins:25, losses:36, winPct:0.410, conf:"EAST" },
+      { name:"Memphis Grizzlies",      wins:23, losses:36, winPct:0.390, conf:"WEST" },
+      { name:"Dallas Mavericks",       wins:21, losses:39, winPct:0.350, conf:"WEST" },
+      { name:"New Orleans Pelicans",   wins:19, losses:43, winPct:0.306, conf:"WEST" },
+      { name:"Utah Jazz",              wins:18, losses:42, winPct:0.300, conf:"WEST" },
+      { name:"Washington Wizards",     wins:16, losses:43, winPct:0.271, conf:"EAST" },
+      { name:"Brooklyn Nets",          wins:15, losses:45, winPct:0.250, conf:"EAST" },
+      { name:"Indiana Pacers",         wins:15, losses:46, winPct:0.246, conf:"EAST" },
+      { name:"Sacramento Kings",       wins:14, losses:48, winPct:0.226, conf:"WEST" },
+    ];
+    const NBA_FALLBACK_GAMES = [
+      { home:"Washington Wizards",    away:"Houston Rockets",      date:"04 Mar", league:"NBA", apiProb:{home:10.2,away:89.8} },
+      { home:"Milwaukee Bucks",       away:"Boston Celtics",       date:"04 Mar", league:"NBA", apiProb:{home:26.0,away:74.0} },
+      { home:"Utah Jazz",             away:"Denver Nuggets",       date:"05 Mar", league:"NBA", apiProb:{home:17.4,away:82.6} },
+      { home:"Golden State Warriors", away:"LA Clippers",          date:"05 Mar", league:"NBA", apiProb:{home:47.1,away:52.9} },
+      { home:"Toronto Raptors",       away:"New York Knicks",      date:"05 Mar", league:"NBA", apiProb:{home:46.9,away:53.1} },
+      { home:"Charlotte Hornets",     away:"Dallas Mavericks",     date:"05 Mar", league:"NBA", apiProb:null },
+      { home:"Los Angeles Lakers",    away:"New Orleans Pelicans", date:"05 Mar", league:"NBA", apiProb:null },
+      { home:"Oklahoma City Thunder", away:"Memphis Grizzlies",    date:"06 Mar", league:"NBA", apiProb:null },
+    ];
+    const NBA_FALLBACK_INJURIES = {
+      "Boston Celtics":      [{ player:"Kristaps Porzingis", status:"out",          tier:"rotation", reason:"Blessure jambe" }],
+      "Los Angeles Lakers":  [{ player:"LeBron James",       status:"questionable", tier:"star",     reason:"Genou" }],
+      "Golden State Warriors":[{ player:"Stephen Curry",     status:"rest",         tier:"star",     reason:"DNP-Rest" }],
+      "Denver Nuggets":      [{ player:"Jamal Murray",       status:"out",          tier:"allstar",  reason:"Ischio-jambiers" }],
+    };
+
+    // ── MODÈLE ────────────────────────────────────────────────────────────────
+    function getDB(sport, nbaStandings) {
+      if (sport==="NBA") return nbaStandings;
+      if (sport==="Rugby Top 14") return RUGBY_TOP14_STANDINGS;
+      if (sport==="6 Nations")    return RUGBY_6N_STANDINGS;
+      return VOLLEYBALL_STANDINGS;
+    }
+    function getTeam(name, db) { return db.find(t=>t.name===name)||{wins:"—",losses:"—",winPct:0.500}; }
+
+    function injuryDelta(teamName, injuryReport) {
+      return Math.max(-0.25, (injuryReport[teamName]||[]).reduce((sum,inj)=>{
+        if (inj.status==="rest")                         return sum + INJURY_IMPACT.rest.delta;
+        if (inj.status==="questionable")                 return sum + INJURY_IMPACT.questionable.delta;
+        const key = `out_${inj.tier||"rotation"}`;
+        return sum + (INJURY_IMPACT[key]||INJURY_IMPACT.out_rotation).delta;
+      },0));
+    }
+
+    function computeProb(home, away, sport, nbaStandings, injuryReport={}, gameFlags={}, intWeekActive=false) {
+      const db = getDB(sport, nbaStandings);
+      const h  = getTeam(home, db), a = getTeam(away, db);
+      let hS = sport==="NBA" ? netRatingToStrength(h.netRating||0) : h.winPct;
+      let aS = sport==="NBA" ? netRatingToStrength(a.netRating||0) : a.winPct;
+      if(sport==="NBA"){
+        hS += injuryDelta(home, injuryReport);
+        aS += injuryDelta(away, injuryReport);
+        if(gameFlags.homeB2B) hS -= 0.05;
+        if(gameFlags.awayB2B) aS -= 0.05;
+      }
+      const hIntD = (sport!=="NBA"&&intWeekActive&&sport!=="6 Nations") ? INT_WEEK_DELTA*(h.intNatPct||0) : 0;
+      const aIntD = (sport!=="NBA"&&intWeekActive&&sport!=="6 Nations") ? INT_WEEK_DELTA*(a.intNatPct||0) : 0;
+      hS += hIntD; aS += aIntD;
+      hS = Math.max(0.05,Math.min(0.95,hS));
+      aS = Math.max(0.05,Math.min(0.95,aS));
+      const homeAdv = sport==="NBA" ? 0.035 : 0.05;
+      const raw  = (hS+homeAdv)/((hS+homeAdv)+aS);
+      const prob = 0.5+(raw-0.5)*0.75;
+      return { home:Math.round(prob*1000)/10, away:Math.round((1-prob)*1000)/10, hIntDelta:hIntD, aIntDelta:aIntD };
+    }
+    function calcEdge(p,o)      { return p/100 - 1/o; }
+    function kelly(br,p,o)      { const b=o-1,pp=p/100; return Math.max(0,(b*pp-(1-pp))/b)*br; }
+    function bestOdds(obj)      { const e=Object.entries(obj).filter(([,v])=>v>0); return e.length?e.reduce((b,c)=>c[1]>b[1]?c:b):null; }
+
+    // ── NBA HOOK ──────────────────────────────────────────────────────────────
+    function useNBAData() {
+      const [standings,  setStandings]  = useState([]);
+      const [games,      setGames]      = useState([]);
+      const [injuries,   setInjuries]   = useState({});
+      const [loading,    setLoading]    = useState(true);
+      const [error,      setError]      = useState(null);
+      const [lastUpdate, setLastUpdate] = useState(null);
+
+      const fetchData = useCallback(async () => {
+        setLoading(true); setError(null);
+        try {
+          const res = await fetch("https://api.anthropic.com/v1/messages", {
+            method:"POST", headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({
+              model:"claude-sonnet-4-20250514", max_tokens:2000,
+              tools:[{type:"web_search_20250305",name:"web_search"}],
+              system:`Réponds UNIQUEMENT avec un JSON valide sans markdown.
+Structure exacte :
+{"standings":[{"name":"","wins":0,"losses":0,"winPct":0.000,"conf":"EAST","netRating":0.0,"offRating":0.0,"defRating":0.0}],"upcoming_games":[{"home":"","away":"","date":"DD Mon","homeB2B":false,"awayB2B":false,"win_prob_home":50,"win_prob_away":50}],"injuries":{"Team":[{"player":"","status":"out|questionable|rest","tier":"star|allstar|rotation","reason":""}]}}
+- standings : 29 équipes NBA triées par netRating décroissant, saison en cours
+- netRating=offRating-defRating (points/100 possessions)
+- homeB2B/awayB2B : true si l'équipe joue son 2e match en 2 jours
+- injuries : joueurs absents/incertains pour les matchs à venir uniquement`,
+              messages:[{role:"user",content:"Utilise web_search pour: 1) classements NBA avec Net Rating saison en cours 2) 8 prochains matchs avec back-to-back flags 3) injury reports officiels du jour. JSON uniquement."}]
+            })
+          });
+          const data = await res.json();
+          const txt  = data.content?.find(b=>b.type==="text");
+          if (!txt) throw new Error("no text");
+          const raw    = txt.text.trim().replace(/```json\n?/g,"").replace(/```\n?/g,"").trim();
+          const parsed = JSON.parse(raw);
+          setStandings(parsed.standings.map(t=>({name:t.name,wins:+t.wins||0,losses:+t.losses||0,winPct:+t.winPct||0,conf:t.conf||"EAST",netRating:+t.netRating||0,offRating:+t.offRating||0,defRating:+t.defRating||0})));
+          setGames(parsed.upcoming_games.map(g=>({home:g.home,away:g.away,date:g.date,league:"NBA",homeB2B:!!g.homeB2B,awayB2B:!!g.awayB2B,apiProb:g.win_prob_home?{home:+g.win_prob_home,away:+g.win_prob_away}:null})));
+          setInjuries(parsed.injuries||{});
+          setLastUpdate(new Date());
+        } catch(e) {
+          setError(e.message);
+          setStandings(prev => prev.length ? prev : NBA_FALLBACK_STANDINGS);
+          setGames([]);
+          setInjuries({});
+          setLastUpdate(new Date());
+        } finally { setLoading(false); }
+      },[]);
+
+      useEffect(()=>{
+        fetchData();
+        const t = setInterval(fetchData, 15*60*1000);
+        return ()=>clearInterval(t);
+      },[fetchData]);
+
+      return { standings, games, injuries, loading, error, refetch:fetchData, lastUpdate };
+    }
+
+    // ── UI COMPONENTS ─────────────────────────────────────────────────────────
+    function Chip({children, color=C.accent, small}) {
+      return <span style={{background:`${color}18`,color,border:`1px solid ${color}30`,padding:small?"2px 6px":"3px 9px",borderRadius:5,fontSize:small?9:11,fontWeight:700,letterSpacing:"0.04em",textTransform:"uppercase",whiteSpace:"nowrap"}}>{children}</span>;
+    }
+    function Card({children, style, glow}) {
+      return <div className={glow?"glow-card":""} style={{background:C.card,border:`1px solid ${glow?C.accent:C.border}`,borderRadius:10,padding:14,...style}}>{children}</div>;
+    }
+    function Stat({label, value, sub, color=C.accent}) {
+      return <Card style={{flex:1,minWidth:90}}>
+        <div style={{fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:5}}>{label}</div>
+        <div style={{fontSize:22,fontWeight:800,color,lineHeight:1,fontFamily:"DM Mono"}}>{value}</div>
+        {sub&&<div style={{fontSize:10,color:C.dim,marginTop:4}}>{sub}</div>}
+      </Card>;
+    }
+    function Spinner() {
+      return <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:280,gap:14}}>
+        <div className="spin" style={{fontSize:30,color:C.accent}}>◈</div>
+        <div style={{color:C.accent,fontWeight:700,fontSize:13}}>Récupération NBA…</div>
+        <div style={{color:C.muted,fontSize:11,textAlign:"center",lineHeight:1.7}}>Classements · Matchs · Injury reports</div>
+      </div>;
+    }
+    function LiveBadge({loading,error,lastUpdate,refetch}) {
+      const fmt = d=>d?.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})||"";
+      return <div style={{display:"flex",alignItems:"center",gap:5,background:error?`${C.red}15`:`${C.accent}15`,border:`1px solid ${error?C.red:C.accent}30`,borderRadius:6,padding:"3px 8px"}}>
+        {loading?<span className="spin" style={{fontSize:9,color:C.yellow}}>◈</span>:<div style={{width:5,height:5,borderRadius:"50%",background:error?C.red:C.accent}}/>}
+        <span style={{fontSize:10,color:error?C.red:C.accent,fontWeight:600}}>{loading?"Chargement…":error?"Secours":`Live · ${fmt(lastUpdate)}`}</span>
+        <button onClick={refetch} style={{background:"none",border:"none",color:error?C.red:C.accent,cursor:"pointer",fontSize:12,padding:0}}>↻</button>
+      </div>;
+    }
+    function InjuryBadges({teamName, injuries}) {
+      const list = injuries[teamName]||[];
+      if(!list.length) return null;
+      const color = inj => inj.status==="rest"?C.purple:inj.status==="questionable"?C.dim:inj.tier==="star"?C.red:inj.tier==="allstar"?C.orange:C.yellow;
+      const icon  = inj => inj.status==="rest"?"😴":inj.status==="questionable"?"⚠️":"🚑";
+      const delta = inj => inj.status==="rest"?INJURY_IMPACT.rest.delta:inj.status==="questionable"?INJURY_IMPACT.questionable.delta:(INJURY_IMPACT[`out_${inj.tier||"rotation"}`]||INJURY_IMPACT.out_rotation).delta;
+      return <div style={{display:"flex",flexWrap:"wrap",gap:3,marginTop:5}}>
+        {list.map((inj,i)=><span key={i} style={{display:"inline-flex",alignItems:"center",gap:3,background:`${color(inj)}15`,border:`1px solid ${color(inj)}30`,borderRadius:4,padding:"2px 6px",fontSize:9,color:color(inj),fontWeight:600}}>
+          {icon(inj)} {inj.player} <span style={{opacity:0.7}}>({(delta(inj)*100).toFixed(0)}%)</span>
+        </span>)}
+      </div>;
+    }
+
+    // ── TABS ──────────────────────────────────────────────────────────────────
+    const TABS = [
+      { id:0, label:"Dashboard", icon:"🏠" },
+      { id:1, label:"Prédictions", icon:"🔮" },
+      { id:2, label:"Classements", icon:"📊" },
+      { id:3, label:"Bankroll", icon:"💰" },
+      { id:4, label:"Historique", icon:"📋" },
+    ];
+
+    // ── DASHBOARD ─────────────────────────────────────────────────────────────
+    function Dashboard({bets, bankroll, loading, error, lastUpdate, refetch}) {
+      const tp=bets.reduce((s,b)=>s+b.profit,0), ts=bets.reduce((s,b)=>s+b.stake,0);
+      const wins=bets.filter(b=>b.result==="win").length;
+      const roi=ts>0?((tp/ts)*100).toFixed(1):"0.0";
+      const cumul=bets.reduce((acc,b)=>{acc.push((acc[acc.length-1]||0)+b.profit);return acc;},[0]);
+      const last=cumul[cumul.length-1]||0;
+      const W=400,H=80,minV=Math.min(...cumul,-5),maxV=Math.max(...cumul,5);
+      const pts=cumul.map((v,i)=>`${(i/(cumul.length-1||1))*W},${H-((v-minV)/(maxV-minV))*H}`).join(" ");
+
+      return <div className="fade" style={{display:"flex",flexDirection:"column",gap:14}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+          <div>
+            <h2 style={{fontSize:20,fontWeight:800}}>Dashboard</h2>
+            <p style={{fontSize:11,color:C.dim,marginTop:2}}>Mars 2026 · 🏀 🏉 🏐</p>
+          </div>
+          <div style={{display:"flex",gap:7,alignItems:"center",flexWrap:"wrap"}}>
+            <LiveBadge loading={loading} error={error} lastUpdate={lastUpdate} refetch={refetch}/>
+            <Chip color={last>=0?C.accent:C.red}>{last>=0?"▲ Profit":"▼ Perte"}</Chip>
+          </div>
+        </div>
+
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          <Stat label="Bankroll" value={`${bankroll}€`} sub="Capital"/>
+          <Stat label="P&L" value={`${last>=0?"+":""}${last.toFixed(0)}€`} color={last>=0?C.accent:C.red} sub="Net"/>
+          <Stat label="ROI" value={`${roi}%`} color={parseFloat(roi)>=0?C.accent:C.red} sub={`${ts}€ misés`}/>
+          <Stat label="Win Rate" value={`${bets.length?((wins/bets.length)*100).toFixed(0):0}%`} color={C.yellow} sub={`${wins}/${bets.length}`}/>
+        </div>
+
+        <Card>
+          <div style={{fontWeight:700,fontSize:12,marginBottom:8}}>Courbe P&L cumulée</div>
+          <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",height:H}} preserveAspectRatio="none">
+            <line x1={0} y1={H-((0-minV)/(maxV-minV))*H} x2={W} y2={H-((0-minV)/(maxV-minV))*H} stroke={C.yellow} strokeWidth="1" strokeDasharray="4,3" opacity={0.5}/>
+            <polyline fill="none" stroke={last>=0?C.accent:C.red} strokeWidth="2" points={pts}/>
+            {cumul.map((v,i)=><circle key={i} cx={(i/(cumul.length-1||1))*W} cy={H-((v-minV)/(maxV-minV))*H} r="2.5" fill={last>=0?C.accent:C.red}/>)}
+          </svg>
+        </Card>
+
+        <Card>
+          <div style={{fontWeight:700,fontSize:12,marginBottom:10}}>🎯 Bookmakers recommandés</div>
+          {[
+            {sport:"NBA",         book:"Winamax", reason:"Marge 5.2%"},
+            {sport:"Rugby Top 14",book:"Winamax", reason:"Top 14 + 6 Nations"},
+            {sport:"Volleyball",  book:"Unibet",  reason:"Streaming Ligue A"},
+          ].map(t=><div key={t.sport} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+            <span style={{fontSize:16}}>{SPORT_META[t.sport]?.icon}</span>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:700,fontSize:12}}>{t.book}</div>
+              <div style={{fontSize:10,color:C.dim}}>{t.reason}</div>
+            </div>
+            <Chip color={SPORT_META[t.sport]?.color||C.accent} small>{t.sport}</Chip>
+          </div>)}
+          <div style={{fontSize:10,color:C.muted,marginTop:8}}>💡 Compare sur <b style={{color:C.text}}>coteur.com</b></div>
+        </Card>
+
+        <Card>
+          <div style={{fontWeight:700,fontSize:12,marginBottom:10}}>Derniers paris</div>
+          {[...bets].reverse().slice(0,5).map(b=><div key={b.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              <span style={{fontSize:14}}>{SPORT_META[b.sport]?.icon}</span>
+              <div>
+                <div style={{fontSize:12,fontWeight:600}}>{b.team}</div>
+                <div style={{fontSize:10,color:C.muted}}>{b.book}</div>
+              </div>
+            </div>
+            <span style={{fontFamily:"DM Mono",fontSize:12,fontWeight:700,color:b.profit>=0?C.accent:C.red}}>{b.profit>=0?"+":""}{b.profit.toFixed(1)}€</span>
+          </div>)}
+        </Card>
+      </div>;
+    }
+
+    // ── PRÉDICTIONS ───────────────────────────────────────────────────────────
+    function Predictions({bankroll, nbaStandings, nbaGames, nbaLoading, nbaError, refetch, injuries}) {
+      const [sport,    setSport]    = useState("NBA");
+      const [bookOdds, setBookOdds] = useState({});
+      const [intWeek, setIntWeek] = useState(false);
+      const [minEdge,  setMinEdge]  = useState(0);
+
+      const sc = SPORT_META[sport]?.color||C.accent;
+      const gamesMap = {"NBA":nbaGames,"Rugby Top 14":RUGBY_TOP14_GAMES,"6 Nations":RUGBY_6N_GAMES,"Volleyball":VOLLEYBALL_GAMES};
+
+      function go(gk,side,bid)      { return parseFloat(bookOdds[`${gk}_${side}_${bid}`])||0; }
+      function so(gk,side,bid,val)  { setBookOdds(p=>({...p,[`${gk}_${side}_${bid}`]:val})); }
+
+      const games = (gamesMap[sport]||[]).map(g=>{
+        const model   = computeProb(g.home,g.away,sport,nbaStandings,injuries);
+        const gameKey = `${sport}_${g.home}`;
+        const sides   = ["home","away"].map(side=>{
+          const prob     = side==="home"?model.home:model.away;
+          const teamName = side==="home"?g.home:g.away;
+          const opb={};
+          BOOKMAKERS.forEach(b=>{opb[b.id]=go(gameKey,side,b.id);});
+          const best=bestOdds(opb), be=best?calcEdge(prob,best[1])*100:null;
+          const bk=(be>0&&best)?kelly(bankroll,prob,best[1]):0;
+          return {side,teamName,prob,opb,best,be,bk};
+        });
+        const anyV=sides.some(s=>s.be!==null&&s.be>0&&s.be>=minEdge);
+        const hasInj=sport==="NBA"&&((injuries[g.home]||[]).length>0||(injuries[g.away]||[]).length>0);
+        return {...g,gameKey,model,sides,anyV,hasInj};
+      }).filter(g=>minEdge<=0||g.anyV);
+
+      if (nbaLoading&&sport==="NBA") return <Spinner/>;
+
+      const ErrorBanner = sport==="NBA" && nbaError ? (
+        <div style={{background:"rgba(255,69,96,0.1)",border:"1px solid rgba(255,69,96,0.4)",borderRadius:10,padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
+          <div>
+            <div style={{fontWeight:700,fontSize:13,color:"#ff4560"}}>⚠️ Récupération NBA échouée</div>
+            <div style={{fontSize:11,color:"#7a95b0",marginTop:3}}>Les matchs à venir n'ont pas pu être chargés. Les données périmées ne sont jamais affichées.</div>
+          </div>
+          <button onClick={refetch} style={{background:"#ff4560",color:"#fff",border:"none",borderRadius:8,padding:"10px 18px",fontSize:13,fontWeight:800,cursor:"pointer"}}>↻ Réessayer</button>
+        </div>
+      ) : null;
+
+      return <div className="fade" style={{display:"flex",flexDirection:"column",gap:14}}>
+        {ErrorBanner}
+        <div>
+          <h2 style={{fontSize:20,fontWeight:800}}>Prédictions</h2>
+          <p style={{fontSize:11,color:C.dim,marginTop:2}}>
+            {sport==="NBA"?"⚡ Live · Injury reports intégrés":`✎ MàJ : ${MANUAL_UPDATED[sport]||""}`}
+          </p>
+        </div>
+
+        {/* Sélecteur sport */}
+        <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4,alignItems:"center"}}>
+          {INT_WEEK_SPORTS.includes(sport)&&<button onClick={()=>setIntWeek(v=>!v)} style={{background:intWeek?`${"#ff8c42"}20`:"#172034",border:`1px solid ${intWeek?"#ff8c42":"#172034"}`,color:intWeek?"#ff8c42":"#4a6080",borderRadius:6,padding:"5px 10px",fontSize:11,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>🌍 Int.{intWeek?" ON":" OFF"}</button>}
+          {SPORTS.map(s=><button key={s} onClick={()=>{setSport(s);setIntWeek(false);}} style={{background:sport===s?SPORT_META[s].color:C.border,color:sport===s?C.bg:C.text,border:"none",borderRadius:6,padding:"6px 12px",fontSize:11,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>{SPORT_META[s].icon} {s}</button>)}
+        </div>
+
+        {/* Barre edge */}
+        <div style={{display:"flex",alignItems:"center",gap:8,background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px"}}>
+          {BOOKMAKERS.map(b=><div key={b.id} style={{display:"flex",alignItems:"center",gap:4}}>
+            <div style={{width:7,height:7,borderRadius:2,background:b.color}}/>
+            <span style={{fontSize:11,fontWeight:600}}>{b.name}</span>
+          </div>)}
+          <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7}}>
+            <span style={{fontSize:11,color:C.muted}}>Edge ≥</span>
+            <input type="range" min={-10} max={15} step={0.5} value={minEdge} onChange={e=>setMinEdge(+e.target.value)} style={{width:60}}/>
+            <span style={{fontFamily:"DM Mono",fontSize:12,color:C.yellow,minWidth:36}}>{minEdge>0?"+":""}{minEdge.toFixed(1)}%</span>
+          </div>
+        </div>
+
+        {games.length===0&&<Card><p style={{color:C.dim,textAlign:"center",padding:16,fontSize:12}}>Aucun match avec cet edge minimum.</p></Card>}
+
+        {games.map((g,gi)=>{
+          const db=getDB(sport,nbaStandings);
+          const hT=getTeam(g.home,db), aT=getTeam(g.away,db);
+          return <Card key={gi} glow={g.anyV} style={{padding:0,overflow:"hidden"}}>
+            {/* Header */}
+            <div style={{background:`${C.border}60`,padding:"8px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:5}}>
+              <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
+                <Chip color={sc} small>{SPORT_META[sport]?.icon} {g.league||sport}</Chip>
+                <Chip color={C.blue} small>{g.date}</Chip>
+                <span style={{fontWeight:700,fontSize:13}}>{g.home} <span style={{color:C.muted}}>vs</span> {g.away}</span>
+              </div>
+              <div style={{display:"flex",gap:5}}>
+                {g.anyV&&<Chip color={C.accent} small>⚡ VALUE</Chip>}
+                {g.hasInj&&<Chip color={C.red} small>🚑</Chip>}
+              </div>
+            </div>
+
+            <div style={{padding:12}}>
+              {/* Stats */}
+              <div style={{display:"flex",gap:10,marginBottom:12,flexWrap:"wrap"}}>
+                {[{t:hT,n:g.home,d:g.model.hDelta},{t:aT,n:g.away,d:g.model.aDelta}].map(({t,n,d})=><div key={n} style={{flex:1,minWidth:140}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:3,flexWrap:"wrap",gap:3}}>
+                    <span style={{fontSize:11,fontWeight:700}}>{n}</span>
+                    <div style={{display:"flex",gap:5,alignItems:"center"}}>
+                      <span style={{fontFamily:"DM Mono",fontSize:11,color:t.winPct>=0.5?C.accent:C.red}}>{t.wins}V–{t.losses}D</span>
+                      {d!==0&&<span style={{fontFamily:"DM Mono",fontSize:10,color:C.red}}>({(d*100).toFixed(0)}%)</span>}
+                    </div>
+                  </div>
+                  <div style={{background:C.border,borderRadius:3,height:3}}>
+                    <div style={{width:`${t.winPct*100}%`,background:t.winPct>=0.5?C.accent:C.red,borderRadius:3,height:"100%"}}/>
+                  </div>
+                  {sport==="NBA"&&<InjuryBadges teamName={n} injuries={injuries}/>}
+                </div>)}
+              </div>
+
+              {/* Comparateur */}
+              {g.sides.map(({side,teamName,prob,opb,best,be,bk})=>{
+                const isV=be!==null&&be>0&&be>=minEdge;
+                return <div key={side} style={{marginBottom:side==="home"?10:0,background:isV?C.accentDim:`${C.border}30`,border:`1px solid ${isV?C.accent+"50":C.border}`,borderRadius:7,overflow:"hidden"}}>
+                  {/* Header équipe */}
+                  <div style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",background:`${C.border}40`,flexWrap:"wrap"}}>
+                    <span style={{fontWeight:700,fontSize:12}}>{teamName} <span style={{fontSize:9,color:C.muted,fontWeight:400}}>{side==="home"?"🏠":"✈️"}</span></span>
+                    <div style={{display:"flex",alignItems:"center",gap:5}}>
+                      <span style={{fontSize:10,color:C.muted}}>Modèle</span>
+                      <span style={{fontFamily:"DM Mono",fontWeight:700,fontSize:13,color:prob>50?sc:C.dim}}>{prob}%</span>
+                    </div>
+                    {best&&best[1]>0&&<div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:8}}>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:9,color:C.muted}}>Best cote</div>
+                        <span style={{fontFamily:"DM Mono",fontSize:14,fontWeight:700,color:C.yellow}}>{best[1].toFixed(2)}</span>
+                        <span style={{fontSize:9,color:C.muted,marginLeft:3}}>({BOOKMAKERS.find(b=>b.id===best[0])?.short})</span>
+                      </div>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:9,color:C.muted}}>Edge</div>
+                        <span style={{fontFamily:"DM Mono",fontSize:13,fontWeight:700,color:be>0?C.accent:C.red}}>{be>0?"+":""}{be?.toFixed(1)}%</span>
+                      </div>
+                      {isV&&<div style={{background:C.accent,color:C.bg,borderRadius:5,padding:"4px 8px",textAlign:"center",fontWeight:800,fontSize:11}}>✦ VALUE<br/><span style={{fontFamily:"DM Mono"}}>{bk.toFixed(1)}€</span></div>}
+                    </div>}
+                  </div>
+                  {/* Colonnes bookmakers */}
+                  <div style={{display:"flex"}}>
+                    {BOOKMAKERS.map((bk,bi)=>{
+                      const val=opb[bk.id], isBest=best&&best[0]===bk.id&&val>0;
+                      const implP=val>0?(100/val).toFixed(1):"—", ev=val>0?calcEdge(prob,val)*100:null;
+                      return <div key={bk.id} style={{flex:1,padding:"8px 10px",borderLeft:bi>0?`1px solid ${C.border}`:"none",background:isBest?`${bk.color}18`:"transparent",borderTop:`2px solid ${isBest?bk.color:"transparent"}`}}>
+                        <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:7}}>
+                          <div style={{width:20,height:20,borderRadius:3,background:bk.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:"#fff",flexShrink:0}}>{bk.short}</div>
+                          <span style={{fontSize:10,fontWeight:600,color:isBest?C.text:C.dim}}>{bk.name}</span>
+                          {isBest&&<Chip color={C.yellow} small>★</Chip>}
+                        </div>
+                        <input placeholder="Cote" type="number" step="0.01" min="1" inputMode="decimal"
+                          value={bookOdds[`${g.gameKey}_${side}_${bk.id}`]||""}
+                          onChange={ev=>so(g.gameKey,side,bk.id,ev.target.value)}
+                          style={{width:"100%",background:C.bg,border:`1px solid ${isBest?bk.color:C.border}`,borderRadius:5,padding:"5px 7px",color:C.text,fontSize:13,fontFamily:"DM Mono",outline:"none",marginBottom:5}}/>
+                        {val>0&&<div style={{fontSize:9,color:C.muted}}>
+                          <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}><span>Impl.</span><span style={{fontFamily:"DM Mono",color:C.dim}}>{implP}%</span></div>
+                          <div style={{display:"flex",justifyContent:"space-between"}}><span>Edge</span><span style={{fontFamily:"DM Mono",fontWeight:700,color:ev>0?C.accent:C.red}}>{ev>0?"+":""}{ev?.toFixed(1)}%</span></div>
+                        </div>}
+                      </div>;
+                    })}
+                  </div>
+                </div>;
+              })}
+            </div>
+          </Card>;
+        })}
+      </div>;
+    }
+
+    // ── CLASSEMENTS ───────────────────────────────────────────────────────────
+    function Standings({nbaStandings, nbaLoading, nbaError, refetch, lastUpdate}) {
+      const [sport, setSport] = useState("NBA");
+      const db = [...(getDB(sport,nbaStandings)||[])].sort((a,b)=>b.winPct-a.winPct);
+      const sc = SPORT_META[sport]?.color||C.accent;
+
+      return <div className="fade" style={{display:"flex",flexDirection:"column",gap:14}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+          <div>
+            <h2 style={{fontSize:20,fontWeight:800}}>Classements</h2>
+            <p style={{fontSize:11,color:C.dim,marginTop:2}}>
+              {sport==="NBA"?(nbaError?"⚠️ Secours":`⚡ ${lastUpdate?.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})} · 15min`):(`✎ ${MANUAL_UPDATED[sport]}`)}
+            </p>
+          </div>
+          <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
+            {SPORTS.map(s=><button key={s} onClick={()=>{setSport(s);setIntWeek(false);}} style={{background:sport===s?SPORT_META[s].color:C.border,color:sport===s?C.bg:C.text,border:"none",borderRadius:5,padding:"4px 9px",fontSize:10,fontWeight:700,cursor:"pointer"}}>{SPORT_META[s].icon}</button>)}
+            {sport==="NBA"&&<button onClick={refetch} style={{background:C.border,border:"none",borderRadius:5,padding:"4px 9px",fontSize:12,color:C.accent,cursor:"pointer"}}>↻</button>}
+          </div>
+        </div>
+
+        {nbaLoading&&sport==="NBA"?<Spinner/>:(
+          <Card style={{padding:0,overflow:"hidden"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+              <thead><tr style={{background:`${C.border}80`}}>
+                {["#","Équipe",...(sport==="NBA"?["Conf."]:[]),"V","D","Win%"].map(h=><th key={h} style={{padding:"8px 10px",textAlign:"left",fontSize:10,color:C.muted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em"}}>{h}</th>)}
+              </tr></thead>
+              <tbody>{db.map((t,i)=><tr key={t.name} style={{borderTop:`1px solid ${C.border}`,background:i%2===0?"transparent":`${C.border}20`}}>
+                <td style={{padding:"8px 10px",color:i<3?sc:C.muted,fontFamily:"DM Mono",fontWeight:i<3?700:400,fontSize:11}}>{i+1}</td>
+                <td style={{padding:"8px 10px",fontWeight:600,fontSize:12}}>{t.name}</td>
+                {sport==="NBA"&&<td style={{padding:"8px 10px"}}><Chip color={t.conf==="EAST"?C.blue:C.yellow} small>{t.conf}</Chip></td>}
+                <td style={{padding:"8px 10px",fontFamily:"DM Mono",color:C.accent,fontSize:11}}>{t.wins}</td>
+                <td style={{padding:"8px 10px",fontFamily:"DM Mono",color:C.red,fontSize:11}}>{t.losses}</td>
+                <td style={{padding:"8px 10px",fontFamily:"DM Mono",fontWeight:700,color:t.winPct>=0.5?sc:C.dim,fontSize:11}}>{(t.winPct*100).toFixed(1)}%</td>
+              </tr>)}</tbody>
+            </table>
+          </Card>
+        )}
+      </div>;
+    }
+
+    // ── BANKROLL ──────────────────────────────────────────────────────────────
+    function Bankroll({bankroll, setBankroll}) {
+      const [odds,setOdds]=useState(1.85),[prob,setProb]=useState(58),[frac,setFrac]=useState(0.5),[method,setMethod]=useState("half"),[paths,setPaths]=useState([]);
+      const b=odds-1,p=prob/100,kRaw=(b*p-(1-p))/b,kFull=Math.max(0,kRaw)*bankroll;
+      const stake={full:kFull,half:kFull*frac,flat:bankroll*0.02}[method], e=kRaw*100;
+      useEffect(()=>{
+        setPaths(Array.from({length:8},()=>{let br=bankroll;return Array.from({length:30},()=>{br=Math.max(0,Math.random()<p?br+stake*b:br-stake);return br;});}));
+      },[odds,prob,frac,method,bankroll]);
+      const allV=paths.flat(),maxV=Math.max(...allV,bankroll*1.2),minV=Math.min(...allV,bankroll*0.5);
+
+      return <div className="fade" style={{display:"flex",flexDirection:"column",gap:14}}>
+        <div><h2 style={{fontSize:20,fontWeight:800}}>Bankroll</h2><p style={{fontSize:11,color:C.dim,marginTop:2}}>Kelly · Monte Carlo</p></div>
+        <Card>
+          <div style={{fontWeight:700,fontSize:12,marginBottom:12}}>Paramètres</div>
+          {[{l:`Bankroll : ${bankroll}€`,v:bankroll,min:100,max:5000,s:50,set:setBankroll},{l:`Cote : ${odds.toFixed(2)}`,v:odds,min:1.1,max:6,s:0.05,set:setOdds},{l:`Prob. : ${prob}%`,v:prob,min:30,max:80,s:1,set:setProb}].map(({l,v,min,max,s,set})=><div key={l} style={{marginBottom:10}}><div style={{fontSize:11,color:C.muted,marginBottom:3}}>{l}</div><input type="range" min={min} max={max} step={s} value={v} onChange={e=>set(parseFloat(e.target.value))} style={{width:"100%"}}/></div>)}
+          <div style={{fontWeight:700,fontSize:12,margin:"10px 0 8px"}}>Stratégie</div>
+          {[["full","Kelly complet"],["half",`½ Kelly ×${frac.toFixed(1)}`],["flat","Flat 2%"]].map(([k,l])=><button key={k} onClick={()=>setMethod(k)} style={{display:"block",width:"100%",marginBottom:5,textAlign:"left",background:method===k?C.accent:C.border,color:method===k?C.bg:C.text,border:"none",borderRadius:6,padding:"7px 12px",fontSize:12,fontWeight:700,cursor:"pointer"}}>{l}</button>)}
+          {method==="half"&&<div style={{marginTop:8}}><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Fraction : {(frac*100).toFixed(0)}%</div><input type="range" min={0.1} max={1} step={0.05} value={frac} onChange={e=>setFrac(parseFloat(e.target.value))} style={{width:"100%"}}/></div>}
+        </Card>
+        <div style={{display:"flex",gap:10}}>
+          <Stat label="Mise Kelly" value={`${stake.toFixed(1)}€`} sub={`${((stake/bankroll)*100).toFixed(1)}%`}/>
+          <Stat label="Edge" value={`${e.toFixed(1)}%`} sub={e>0?"Avantage":"⚠️ Négatif"} color={e>0?C.accent:C.red}/>
+        </div>
+        <Card>
+          <div style={{fontWeight:700,fontSize:12,marginBottom:8}}>Monte Carlo · 30 paris</div>
+          <svg viewBox="0 0 400 100" style={{width:"100%",height:100}} preserveAspectRatio="none">
+            <line x1={0} y1={100-((bankroll-minV)/(maxV-minV))*100} x2={400} y2={100-((bankroll-minV)/(maxV-minV))*100} stroke={C.yellow} strokeWidth="1" strokeDasharray="4,3" opacity={0.5}/>
+            {paths.map((path,pi)=>{const d=[bankroll,...path].map((v,i)=>`${i===0?"M":"L"}${(i/30)*400},${100-((v-minV)/(maxV-minV))*100}`).join(" ");return <path key={pi} d={d} fill="none" stroke={path[path.length-1]>=bankroll?C.accent:C.red} strokeWidth="1.5" opacity={0.55}/>;})}
+          </svg>
+          <div style={{fontSize:10,color:C.muted,marginTop:5}}>Jaune = bankroll initiale · Vert = profit · Rouge = perte</div>
+        </Card>
+      </div>;
+    }
+
+    // ── HISTORIQUE ────────────────────────────────────────────────────────────
+    function Historique() {
+      const [bets,setBets]=useState([
+        {id:1,team:"LA Lakers",      match:"Warriors vs Lakers",   sport:"NBA",         book:"Winamax",date:"01 Mar",odds:2.10,stake:40,result:"win", profit:84},
+        {id:2,team:"LA Clippers",    match:"Clippers vs Pelicans", sport:"NBA",         book:"Unibet", date:"02 Mar",odds:1.75,stake:30,result:"win", profit:22.5},
+        {id:3,team:"OKC Thunder",    match:"Dallas vs OKC",        sport:"NBA",         book:"Winamax",date:"02 Mar",odds:1.55,stake:35,result:"win", profit:19.25},
+        {id:4,team:"Raptors",        match:"Washington vs Raptors",sport:"NBA",         book:"Unibet", date:"01 Mar",odds:1.90,stake:25,result:"loss",profit:-25},
+        {id:5,team:"Toulouse",       match:"Toulouse vs Racing 92",sport:"Rugby Top 14",book:"Winamax",date:"01 Mar",odds:1.45,stake:30,result:"win", profit:13.5},
+        {id:6,team:"Tours VB",       match:"Tours VB vs Chaumont", sport:"Volleyball",  book:"Unibet", date:"28 Fév",odds:1.60,stake:20,result:"win", profit:12},
+      ]);
+      const [form,setForm]=useState({team:"",match:"",sport:"NBA",book:"Winamax",odds:"",stake:"",result:"win",date:""});
+      const add=()=>{
+        if(!form.team||!form.odds||!form.stake)return;
+        const odds=+form.odds,stake=+form.stake;
+        setBets(p=>[...p,{id:Date.now(),...form,odds,stake,profit:form.result==="win"?stake*(odds-1):-stake}]);
+        setForm(f=>({...f,team:"",match:"",odds:"",stake:""}));
+      };
+      const tp=bets.reduce((s,b)=>s+b.profit,0),ts=bets.reduce((s,b)=>s+b.stake,0);
+      const roi=ts>0?(tp/ts*100).toFixed(1):0,wins=bets.filter(b=>b.result==="win").length;
+
+      return <div className="fade" style={{display:"flex",flexDirection:"column",gap:14}}>
+        <h2 style={{fontSize:20,fontWeight:800}}>Historique</h2>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          <Stat label="P&L" value={`${tp>=0?"+":""}${tp.toFixed(0)}€`} color={tp>=0?C.accent:C.red}/>
+          <Stat label="ROI" value={`${roi}%`} color={parseFloat(roi)>=0?C.accent:C.red} sub={`${ts}€`}/>
+          <Stat label="Win Rate" value={`${bets.length?(wins/bets.length*100).toFixed(0):0}%`} color={C.yellow} sub={`${wins}/${bets.length}`}/>
+        </div>
+        <Card>
+          <div style={{fontWeight:700,fontSize:12,marginBottom:10}}>Ajouter un pari</div>
+          <div style={{display:"flex",flexDirection:"column",gap:7}}>
+            <div style={{display:"flex",gap:7}}>
+              <input placeholder="Équipe" value={form.team} onChange={e=>setForm(p=>({...p,team:e.target.value}))} style={{flex:2,background:C.bg,border:`1px solid ${C.border}`,borderRadius:6,padding:"8px 10px",color:C.text,fontSize:13,outline:"none"}}/>
+              <input placeholder="Date" value={form.date} onChange={e=>setForm(p=>({...p,date:e.target.value}))} style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:6,padding:"8px 10px",color:C.text,fontSize:13,outline:"none"}}/>
+            </div>
+            <input placeholder="Match (ex: OKC vs Lakers)" value={form.match} onChange={e=>setForm(p=>({...p,match:e.target.value}))} style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:6,padding:"8px 10px",color:C.text,fontSize:13,outline:"none"}}/>
+            <div style={{display:"flex",gap:7}}>
+              <input placeholder="Cote" type="number" inputMode="decimal" value={form.odds} onChange={e=>setForm(p=>({...p,odds:e.target.value}))} style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:6,padding:"8px 10px",color:C.text,fontSize:13,outline:"none"}}/>
+              <input placeholder="Mise €" type="number" inputMode="numeric" value={form.stake} onChange={e=>setForm(p=>({...p,stake:e.target.value}))} style={{flex:1,background:C.bg,border:`1px solid ${C.border}`,borderRadius:6,padding:"8px 10px",color:C.text,fontSize:13,outline:"none"}}/>
+            </div>
+            <div style={{display:"flex",gap:7}}>
+              <select value={form.sport} onChange={e=>setForm(p=>({...p,sport:e.target.value}))} style={{flex:1,background:C.border,border:"none",borderRadius:6,padding:"8px 10px",color:C.text,fontSize:12}}>{SPORTS.map(s=><option key={s}>{s}</option>)}</select>
+              <select value={form.book} onChange={e=>setForm(p=>({...p,book:e.target.value}))} style={{flex:1,background:C.border,border:"none",borderRadius:6,padding:"8px 10px",color:C.text,fontSize:12}}>{BOOKMAKERS.map(b=><option key={b.id}>{b.name}</option>)}</select>
+              <select value={form.result} onChange={e=>setForm(p=>({...p,result:e.target.value}))} style={{flex:1,background:C.border,border:"none",borderRadius:6,padding:"8px 10px",color:C.text,fontSize:12}}><option value="win">Gagné</option><option value="loss">Perdu</option></select>
+            </div>
+            <button onClick={add} style={{background:C.accent,color:C.bg,border:"none",borderRadius:6,padding:"10px",fontSize:13,fontWeight:800,cursor:"pointer"}}>+ Ajouter</button>
+          </div>
+        </Card>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {[...bets].reverse().map((b,i)=><Card key={b.id} style={{padding:"10px 12px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                  <span style={{fontSize:14}}>{SPORT_META[b.sport]?.icon}</span>
+                  <span style={{fontWeight:700,fontSize:13}}>{b.team}</span>
+                  <Chip color={b.result==="win"?C.accent:C.red} small>{b.result==="win"?"✓":"✗"}</Chip>
+                </div>
+                <div style={{fontSize:11,color:C.muted}}>{b.match} · {b.book} · {b.date}</div>
+                <div style={{fontSize:11,color:C.dim,marginTop:2}}>Cote {b.odds.toFixed(2)} · Mise {b.stake}€</div>
+              </div>
+              <span style={{fontFamily:"DM Mono",fontSize:15,fontWeight:800,color:b.profit>=0?C.accent:C.red}}>{b.profit>=0?"+":""}{b.profit.toFixed(1)}€</span>
+            </div>
+          </Card>)}
+        </div>
+      </div>;
+    }
+
+    // ── APP ───────────────────────────────────────────────────────────────────
+    function App() {
+      const [tab,setTab]=useState(0);
+      const [bankroll,setBankroll]=useState(1000);
+      const {standings:nbaStandings, games:nbaGames, injuries, loading, error, refetch, lastUpdate} = useNBAData();
+
+      const bets = [
+        {id:1,team:"LA Lakers",      match:"Warriors vs Lakers",   sport:"NBA",         book:"Winamax",date:"01 Mar",odds:2.10,stake:40,result:"win", profit:84},
+        {id:2,team:"LA Clippers",    match:"Clippers vs Pelicans", sport:"NBA",         book:"Unibet", date:"02 Mar",odds:1.75,stake:30,result:"win", profit:22.5},
+        {id:3,team:"OKC Thunder",    match:"Dallas vs OKC",        sport:"NBA",         book:"Winamax",date:"02 Mar",odds:1.55,stake:35,result:"win", profit:19.25},
+        {id:4,team:"Raptors",        match:"Washington vs Raptors",sport:"NBA",         book:"Unibet", date:"01 Mar",odds:1.90,stake:25,result:"loss",profit:-25},
+        {id:5,team:"Toulouse",       match:"Toulouse vs Racing 92",sport:"Rugby Top 14",book:"Winamax",date:"01 Mar",odds:1.45,stake:30,result:"win", profit:13.5},
+        {id:6,team:"Tours VB",       match:"Tours VB vs Chaumont", sport:"Volleyball",  book:"Unibet", date:"28 Fév",odds:1.60,stake:20,result:"win", profit:12},
+      ];
+
+      return <>
+        {/* Header sticky */}
+        <div style={{position:"sticky",top:0,zIndex:50,background:C.card,borderBottom:`1px solid ${C.border}`,padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontFamily:"DM Mono",fontWeight:700,fontSize:16,color:C.accent}}>◈ BetEdge</span>
+            <span style={{fontSize:9,color:C.muted}}>🏀🏉🏐</span>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <LiveBadge loading={loading} error={error} lastUpdate={lastUpdate} refetch={refetch}/>
+            <span style={{fontFamily:"DM Mono",fontSize:14,fontWeight:700,color:C.accent}}>{bankroll}€</span>
+          </div>
+        </div>
+
+        {/* Desktop nav */}
+        <div className="desktop-nav" style={{background:C.card,borderBottom:`1px solid ${C.border}`,padding:"0 20px"}}>
+          {TABS.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{background:"none",border:"none",borderBottom:`2px solid ${tab===t.id?C.accent:"transparent"}`,color:tab===t.id?C.accent:C.dim,padding:"10px 14px",fontSize:12,fontWeight:tab===t.id?700:500,cursor:"pointer"}}>{t.icon} {t.label}</button>)}
+        </div>
+
+        {/* Content */}
+        <div className="content-wrap" style={{padding:"16px 16px 0"}}>
+          {tab===0&&<Dashboard bets={bets} bankroll={bankroll} loading={loading} error={error} lastUpdate={lastUpdate} refetch={refetch}/>}
+          {tab===1&&<Predictions bankroll={bankroll} nbaStandings={nbaStandings} nbaGames={nbaGames} nbaLoading={loading} nbaError={error} refetch={refetch} injuries={injuries}/>}
+          {tab===2&&<Standings nbaStandings={nbaStandings} nbaLoading={loading} nbaError={error} refetch={refetch} lastUpdate={lastUpdate}/>}
+          {tab===3&&<Bankroll bankroll={bankroll} setBankroll={setBankroll}/>}
+          {tab===4&&<Historique/>}
+        </div>
+
+        {/* Bottom nav mobile */}
+        <nav className="bottom-nav">
+          {TABS.map(t=><button key={t.id} onClick={()=>setTab(t.id)} className={tab===t.id?"active":""}>
+            <span className="nav-icon">{t.icon}</span>
+            <span>{t.label}</span>
+          </button>)}
+        </nav>
+      </>;
+    }
+
+    // Enregistrement Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(()=>{});
+      });
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App/>);
+  </script>
+</body>
+</html>
