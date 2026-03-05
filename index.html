@@ -219,35 +219,31 @@ function useNBAData(bdlKey){
     setLoading(true);setError(null);
     const h={Authorization:'Bearer '+bdlKey};
     try{
-      // ── Standings calculés depuis les résultats de la saison ───────────────
-      // On récupère les matchs joués (plusieurs pages) pour reconstruire W/L
+      // ── Standings depuis les 200 derniers matchs joués (1 seule requête) ──
+      const sUrl=BDL+'/games?seasons[]=2025&per_page=100&postseason=false';
+      const [r1,r2]=await Promise.all([
+        fetch(sUrl,{headers:h}),
+        fetch(sUrl+'&cursor=100',{headers:h}).catch(()=>null)
+      ]);
+      if(!r1.ok)throw new Error('Games saison HTTP '+r1.status);
+      const rows1=(await r1.json()).data||[];
+      const rows2=r2&&r2.ok?(await r2.json()).data||[]:[];
+      const allRows=[...rows1,...rows2];
+
       const wins={},losses={},conf={};
-      let cursor=null, pages=0;
-      while(pages<8){
-        let url=BDL+'/games?seasons[]=2025&per_page=100&postseason=false';
-        if(cursor)url+='&cursor='+cursor;
-        const r=await fetch(url,{headers:h});
-        if(!r.ok)throw new Error('Games saison HTTP '+r.status);
-        const d=await r.json();
-        const rows=d.data||[];
-        rows.forEach(g=>{
-          if(g.period<4&&g.home_team_score===0&&g.visitor_team_score===0)return; // pas joué
-          const hn=g.home_team.full_name, an=g.visitor_team.full_name;
-          conf[hn]=g.home_team.conference;
-          conf[an]=g.visitor_team.conference;
-          if(!wins[hn]){wins[hn]=0;losses[hn]=0;}
-          if(!wins[an]){wins[an]=0;losses[an]=0;}
-          if(g.home_team_score>g.visitor_team_score){wins[hn]++;losses[an]++;}
-          else if(g.visitor_team_score>g.home_team_score){wins[an]++;losses[hn]++;}
-        });
-        cursor=d.meta?.next_cursor;
-        if(!cursor||rows.length===0)break;
-        pages++;
-      }
-      const mapped=Object.keys(wins).filter(n=>n&&!n.includes('Stags')&&!n.includes('Bombers')&&!n.includes('Rebels')&&!n.includes('Falcons')&&!n.includes('Huskies')&&!n.includes('Capitols')&&!n.includes('Steamrollers')&&!n.includes('Ironmen')&&!n.includes('Packers')&&!n.includes('Hawks')&&!n.includes('Olympians')&&!n.includes('Redskins')&&(wins[n]+losses[n])>5).map(n=>({
-        name:n,
-        wins:wins[n],
-        losses:losses[n],
+      const HISTORIC=['Stags','Bombers','Rebels','Falcons','Huskies','Capitols','Steamrollers','Ironmen','Packers','Olympians','Redskins'];
+      allRows.forEach(g=>{
+        if(g.home_team_score===0&&g.visitor_team_score===0)return;
+        const hn=g.home_team.full_name, an=g.visitor_team.full_name;
+        if(HISTORIC.some(x=>hn.includes(x)||an.includes(x)))return;
+        conf[hn]=g.home_team.conference; conf[an]=g.visitor_team.conference;
+        if(!wins[hn]){wins[hn]=0;losses[hn]=0;}
+        if(!wins[an]){wins[an]=0;losses[an]=0;}
+        if(g.home_team_score>g.visitor_team_score){wins[hn]++;losses[an]++;}
+        else if(g.visitor_team_score>g.home_team_score){wins[an]++;losses[hn]++;}
+      });
+      const mapped=Object.keys(wins).filter(n=>(wins[n]+losses[n])>2).map(n=>({
+        name:n, wins:wins[n], losses:losses[n],
         winPct:(wins[n]+losses[n])>0?wins[n]/(wins[n]+losses[n]):0,
         conf:(conf[n]||'').toLowerCase().startsWith('e')?'EAST':'WEST',
         netRating:0,offRating:0,defRating:0,
