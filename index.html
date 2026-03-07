@@ -88,24 +88,59 @@ const SIX_NATIONS_GAMES = [
   {home:'Galles',   away:'Italie',    date:'14 Mar',league:'6 Nations'},
   {home:'France',   away:'Angleterre',date:'14 Mar',league:'6 Nations'},
 ];
-const VOLLEY = [
-  {name:'Tours VB',      wins:18,losses:2, winPct:.900,intNatPct:.35},
-  {name:'Paris VB',      wins:16,losses:4, winPct:.800,intNatPct:.30},
-  {name:'Chaumont',      wins:14,losses:6, winPct:.700,intNatPct:.25},
-  {name:'Nice',          wins:12,losses:8, winPct:.600,intNatPct:.15},
-  {name:'Tourcoing',     wins:11,losses:9, winPct:.550,intNatPct:.20},
-  {name:'Montpellier VB',wins:10,losses:10,winPct:.500,intNatPct:.12},
-  {name:'Poitiers',      wins:8, losses:12,winPct:.400,intNatPct:.08},
-  {name:'Nantes',        wins:7, losses:13,winPct:.350,intNatPct:.06},
-  {name:'Cambrai',       wins:5, losses:15,winPct:.250,intNatPct:.05},
-  {name:'Cannes',        wins:3, losses:17,winPct:.150,intNatPct:.04},
-];
+// ─── VOLLEYBALL DATA ──────────────────────────────────────────────────────────
+const VOLLEY_LEAGUES = {
+  'Ligue A': [
+    {name:'Tours VB',       wins:18,losses:2, winPct:.900,intNatPct:.35,attackRating:8.2,defRating:7.1},
+    {name:'Paris VB',       wins:16,losses:4, winPct:.800,intNatPct:.30,attackRating:7.8,defRating:6.8},
+    {name:'Chaumont',       wins:14,losses:6, winPct:.700,intNatPct:.25,attackRating:7.4,defRating:6.5},
+    {name:'Nice',           wins:12,losses:8, winPct:.600,intNatPct:.15,attackRating:7.0,defRating:6.2},
+    {name:'Tourcoing',      wins:11,losses:9, winPct:.550,intNatPct:.20,attackRating:6.8,defRating:6.0},
+    {name:'Montpellier VB', wins:10,losses:10,winPct:.500,intNatPct:.12,attackRating:6.5,defRating:5.8},
+    {name:'Poitiers',       wins:8, losses:12,winPct:.400,intNatPct:.08,attackRating:6.2,defRating:5.5},
+    {name:'Nantes',         wins:7, losses:13,winPct:.350,intNatPct:.06,attackRating:6.0,defRating:5.3},
+    {name:'Cambrai',        wins:5, losses:15,winPct:.250,intNatPct:.05,attackRating:5.7,defRating:5.0},
+    {name:'Cannes',         wins:3, losses:17,winPct:.150,intNatPct:.04,attackRating:5.4,defRating:4.8},
+  ],
+  'Serie A1': [
+    {name:'Perugia',        wins:20,losses:2, winPct:.909,intNatPct:.50,attackRating:8.5,defRating:7.4},
+    {name:'Trento',         wins:18,losses:4, winPct:.818,intNatPct:.45,attackRating:8.2,defRating:7.1},
+    {name:'Monza',          wins:15,losses:7, winPct:.682,intNatPct:.35,attackRating:7.6,defRating:6.8},
+    {name:'Milano',         wins:14,losses:8, winPct:.636,intNatPct:.30,attackRating:7.3,defRating:6.5},
+    {name:'Civitanova',     wins:13,losses:9, winPct:.591,intNatPct:.40,attackRating:7.5,defRating:6.9},
+    {name:'Modena',         wins:11,losses:11,winPct:.500,intNatPct:.28,attackRating:7.0,defRating:6.3},
+    {name:'Piacenza',       wins:9, losses:13,winPct:.409,intNatPct:.20,attackRating:6.6,defRating:5.9},
+    {name:'Padova',         wins:7, losses:15,winPct:.318,intNatPct:.15,attackRating:6.2,defRating:5.5},
+  ],
+  'PlusLiga': [
+    {name:'Jastrzębski',    wins:19,losses:3, winPct:.864,intNatPct:.55,attackRating:8.4,defRating:7.3},
+    {name:'Kędzierzyn',     wins:17,losses:5, winPct:.773,intNatPct:.48,attackRating:8.0,defRating:7.0},
+    {name:'Lublin',         wins:14,losses:8, winPct:.636,intNatPct:.35,attackRating:7.5,defRating:6.6},
+    {name:'Gdańsk',         wins:12,losses:10,winPct:.545,intNatPct:.25,attackRating:7.1,defRating:6.2},
+    {name:'Resovia',        wins:10,losses:12,winPct:.455,intNatPct:.30,attackRating:6.8,defRating:6.0},
+    {name:'Warszawa',       wins:8, losses:14,winPct:.364,intNatPct:.18,attackRating:6.4,defRating:5.7},
+  ],
+};
+// Toutes les équipes volley dans un seul tableau
+const VOLLEY = Object.values(VOLLEY_LEAGUES).flat();
+
 const VOLLEY_GAMES = [
-  {home:'Tours VB',      away:'Chaumont',  date:'06 Mar',league:'Ligue A'},
-  {home:'Paris VB',      away:'Nice',      date:'06 Mar',league:'Ligue A'},
-  {home:'Tourcoing',     away:'Poitiers',  date:'07 Mar',league:'Ligue A'},
-  {home:'Montpellier VB',away:'Nantes',    date:'07 Mar',league:'Ligue A'},
+  // Ligue A
+  {home:'Tours VB',      away:'Chaumont',    date:'07 Mar',league:'Ligue A',   homeB2B:false,awayB2B:false},
+  {home:'Paris VB',      away:'Nice',        date:'07 Mar',league:'Ligue A',   homeB2B:false,awayB2B:false},
+  {home:'Tourcoing',     away:'Poitiers',    date:'08 Mar',league:'Ligue A',   homeB2B:false,awayB2B:false},
+  {home:'Montpellier VB',away:'Nantes',      date:'08 Mar',league:'Ligue A',   homeB2B:false,awayB2B:false},
+  // Serie A1
+  {home:'Perugia',       away:'Trento',      date:'08 Mar',league:'Serie A1',  homeB2B:false,awayB2B:false},
+  {home:'Monza',         away:'Civitanova',  date:'09 Mar',league:'Serie A1',  homeB2B:false,awayB2B:false},
+  {home:'Milano',        away:'Modena',      date:'09 Mar',league:'Serie A1',  homeB2B:false,awayB2B:false},
+  // PlusLiga
+  {home:'Jastrzębski',   away:'Kędzierzyn',  date:'08 Mar',league:'PlusLiga',  homeB2B:false,awayB2B:false},
+  {home:'Lublin',        away:'Resovia',     date:'09 Mar',league:'PlusLiga',  homeB2B:false,awayB2B:false},
 ];
+
+// Injuries volleyball — saisie manuelle (structure identique NBA)
+const VOLLEY_INJURIES_DEFAULT = {};  // ex: {'Tours VB':[{player:'Ngapeth',status:'out',tier:'star',reason:'genou'}]}
 const NBA_FALLBACK = [
   {name:'Oklahoma City Thunder', wins:50,losses:17,winPct:.746,conf:'WEST',netRating:9.8, offRating:118.2,defRating:108.4},
   {name:'Detroit Pistons',       wins:46,losses:19,winPct:.708,conf:'EAST',netRating:8.1, offRating:116.5,defRating:108.4},
@@ -170,13 +205,24 @@ function getDB(sport,nbaS){
 function computeProb(home,away,sport,nbaS,injuries,flags,intWeek){
   const db=getDB(sport,nbaS);
   const h=getTeam(home,db),a=getTeam(away,db);
-  let hS=sport==='NBA'?nrToStr(h.netRating||0):h.winPct;
-  let aS=sport==='NBA'?nrToStr(a.netRating||0):a.winPct;
-  if(sport==='NBA'){hS+=injDelta(home,injuries);aS+=injDelta(away,injuries);if(flags.homeB2B)hS-=.05;if(flags.awayB2B)aS-=.05;}
+  const isNBA=sport==='NBA';
+  const isVolley=sport==='Volleyball';
+  let hS=isNBA?nrToStr(h.netRating||0):h.winPct;
+  let aS=isNBA?nrToStr(a.netRating||0):a.winPct;
+  // Injuries (NBA + Volleyball)
+  if(isNBA||isVolley){
+    hS+=injDelta(home,injuries);
+    aS+=injDelta(away,injuries);
+  }
+  // Back-to-back (NBA + Volleyball)
+  if(flags.homeB2B) hS-=isVolley?.04:.05;
+  if(flags.awayB2B) aS-=isVolley?.04:.05;
+  // Semaine internationale
   const hID=(sport!=='NBA'&&intWeek&&sport!=='6 Nations')?-.06*(h.intNatPct||0):0;
   const aID=(sport!=='NBA'&&intWeek&&sport!=='6 Nations')?-.06*(a.intNatPct||0):0;
-  hS=Math.max(.05,Math.min(.95,hS+hID));aS=Math.max(.05,Math.min(.95,aS+aID));
-  const ha=sport==='NBA'?.035:.05;
+  hS=Math.max(.05,Math.min(.95,hS+hID));
+  aS=Math.max(.05,Math.min(.95,aS+aID));
+  const ha=isNBA?.035:.05;
   const raw=(hS+ha)/((hS+ha)+aS);
   const prob=.5+(raw-.5)*.75;
   return{home:Math.round(prob*1000)/10,away:Math.round((1-prob)*1000)/10,hID,aID};
@@ -185,7 +231,82 @@ function calcEdge(p,o){return p/100-1/o}
 function kelly(br,p,o){const b=o-1,pp=p/100;return Math.max(0,(b*pp-(1-pp))/b)*br}
 function bestOdds(obj){const en=Object.entries(obj).filter(([,v])=>v>0);return en.length?en.reduce((b,c)=>c[1]>b[1]?c:b):null}
 
-// ─── NBA DATA HOOK — balldontlie.io + RapidAPI injuries ──────────────────────
+// ─── THE ODDS API ─────────────────────────────────────────────────────────────
+const ODDS_SPORT_MAP = {
+  'NBA':           'basketball_nba',
+  'Rugby Top 14':  'rugby_union_french_top_14',
+  '6 Nations':     'rugby_union_six_nations',
+  'Volleyball':    'volleyball_ligue_a_france',
+};
+const ODDS_BOOK_MAP = { // clés The Odds API → nos IDs bookmakers
+  'winamax':'winamax', 'unibet_fr':'unibet', 'unibet':'unibet',
+  'betclic':'betclic', 'pmu':'pmu', 'parionssport':'parions',
+};
+
+function useOddsAPI(oddsKey){
+  const [oddsData, setOddsData] = useState({}); // { "Home_Away": { bookId: {home, away} } }
+  const [oddsLoading, setOddsLoading] = useState(false);
+  const [oddsError, setOddsError] = useState(null);
+  const [oddsUpdate, setOddsUpdate] = useState(null);
+
+  const fetchOdds = useCallback(async(sport, force=false)=>{
+    if(!oddsKey) return;
+    const sportKey = ODDS_SPORT_MAP[sport];
+    if(!sportKey) return;
+
+    const cacheKey = 'odds_'+sport;
+    if(!force){
+      const cached = cacheGet(cacheKey, 30*60*1000); // 30min
+      if(cached){ setOddsData(d=>({...d,[sport]:cached})); return; }
+    }
+
+    setOddsLoading(true); setOddsError(null);
+    try{
+      const url = `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?apiKey=${oddsKey}&regions=eu&markets=h2h&oddsFormat=decimal&bookmakers=winamax,unibet_fr,betclic,parionssport`;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('Odds API HTTP '+res.status);
+      const data = await res.json();
+
+      // Transformer en map { "Home vs Away": { bookId: {home, away} } }
+      const mapped = {};
+      data.forEach(event=>{
+        const home = event.home_team, away = event.away_team;
+        const key = home+'__'+away;
+        mapped[key] = {};
+        (event.bookmakers||[]).forEach(bk=>{
+          const bid = ODDS_BOOK_MAP[bk.key];
+          if(!bid) return;
+          const h2h = bk.markets?.find(m=>m.key==='h2h');
+          if(!h2h) return;
+          const homeOdd = h2h.outcomes?.find(o=>o.name===home)?.price;
+          const awayOdd = h2h.outcomes?.find(o=>o.name===away)?.price;
+          if(homeOdd && awayOdd) mapped[key][bid] = {home: homeOdd, away: awayOdd};
+        });
+      });
+
+      cacheSet(cacheKey, mapped);
+      setOddsData(d=>({...d,[sport]:mapped}));
+      setOddsUpdate(new Date());
+    }catch(err){
+      setOddsError(err.message);
+    }finally{
+      setOddsLoading(false);
+    }
+  },[oddsKey]);
+
+  return {oddsData, oddsLoading, oddsError, oddsUpdate, fetchOdds};
+}
+const CACHE_TTL = 3 * 60 * 60 * 1000; // 3 heures
+function cacheSet(key, data){ localStorage.setItem(key, JSON.stringify({ts: Date.now(), data})); }
+function cacheGet(key, ttl=CACHE_TTL){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return null;
+    const {ts, data} = JSON.parse(raw);
+    if(Date.now() - ts > ttl) return null;
+    return data;
+  }catch(e){ return null; }
+}
 const BDL = 'https://api.balldontlie.io/nba/v1';
 const MONTH_FR = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
 function fmtDate(d){const dt=new Date(d);return dt.getDate()+' '+MONTH_FR[dt.getMonth()];}
@@ -214,21 +335,31 @@ function useNBAData(bdlKey){
   const [injLoading,setInjLoading]=useState(false);
   const [lastUpdate,setLastUpdate]=useState(null);
 
-  const fetchData=useCallback(async()=>{
+  const fetchData=useCallback(async(force=false)=>{
     if(!bdlKey){setLoading(false);return;}
+
+    // ── Charger le cache d'abord ───────────────────────────────────────────
+    const cachedS = cacheGet('bdl_standings');
+    const cachedG = cacheGet('bdl_games', 30*60*1000); // games: 30min
+    const cachedI = cacheGet('bdl_injuries', 60*60*1000); // injuries: 1h
+    if(!force && cachedS && cachedG){
+      setStandings(cachedS);
+      setGames(cachedG);
+      if(cachedI) setInjuries(cachedI);
+      setLastUpdate(new Date(JSON.parse(localStorage.getItem('bdl_standings')||'{}').ts||Date.now()));
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);setError(null);
     const h={Authorization:'Bearer '+bdlKey};
     try{
-      // ── Standings depuis les 200 derniers matchs joués (1 seule requête) ──
+      // ── Standings depuis les 100 derniers matchs joués (1 requête) ─────────
+      // 100 matchs récents suffisent pour avoir toutes les équipes et un win% fiable
       const sUrl=BDL+'/games?seasons[]=2025&per_page=100&postseason=false';
-      const [r1,r2]=await Promise.all([
-        fetch(sUrl,{headers:h}),
-        fetch(sUrl+'&cursor=100',{headers:h}).catch(()=>null)
-      ]);
+      const r1=await fetch(sUrl,{headers:h});
       if(!r1.ok)throw new Error('Games saison HTTP '+r1.status);
-      const rows1=(await r1.json()).data||[];
-      const rows2=r2&&r2.ok?(await r2.json()).data||[]:[];
-      const allRows=[...rows1,...rows2];
+      const allRows=(await r1.json()).data||[];
 
       const wins={},losses={},conf={};
       const HISTORIC=['Stags','Bombers','Rebels','Falcons','Huskies','Capitols','Steamrollers','Ironmen','Packers','Olympians','Redskins'];
@@ -248,7 +379,7 @@ function useNBAData(bdlKey){
         conf:(conf[n]||'').toLowerCase().startsWith('e')?'EAST':'WEST',
         netRating:0,offRating:0,defRating:0,
       })).sort((a,b)=>b.winPct-a.winPct);
-      if(mapped.length>5)setStandings(mapped);
+      if(mapped.length>5){ setStandings(mapped); cacheSet('bdl_standings', mapped); }
 
       // ── Games 7 prochains jours ────────────────────────────────────────────
       const today=new Date();
@@ -267,7 +398,7 @@ function useNBAData(bdlKey){
           date:fmtDate(g.date),
           league:'NBA',homeB2B:false,awayB2B:false,apiProb:null,
         }));
-      setGames(upcoming);
+      setGames(upcoming); cacheSet('bdl_games', upcoming);
       setLastUpdate(new Date());
 
       // ── Injuries ──────────────────────────────────────────────────────────
@@ -286,7 +417,7 @@ function useNBAData(bdlKey){
             if(!inj[team])inj[team]=[];
             inj[team].push({player:player.trim(),status,tier:'rotation',reason:item.type||item.status||''});
           });
-          setInjuries(inj);
+          setInjuries(inj); cacheSet('bdl_injuries', inj);
         }
       }catch(ie){console.warn('Injuries:',ie.message);}
       finally{setInjLoading(false);}
@@ -300,49 +431,72 @@ function useNBAData(bdlKey){
   },[bdlKey]);
 
   useEffect(()=>{
+    // PAS de setInterval – le cache (3h standings, 30min games, 1h injuries)
+    // protège le quota BallDontLie (60 req/jour free tier).
+    // L'utilisateur peut forcer un refresh avec le bouton ↻.
     fetchData();
-    const t=setInterval(fetchData,15*60*1000);
-    return()=>clearInterval(t);
   },[fetchData]);
-  return{standings,games,injuries,injLoading,loading,error,refetch:fetchData,lastUpdate};
+  return{standings,games,injuries,injLoading,loading,error,refetch:()=>fetchData(true),lastUpdate};
 }
 
 // ─── ÉCRAN SETUP ─────────────────────────────────────────────────────────────
 function SetupScreen({onDone}){
   const [bdl,setBdl]=useState('');
+  const [odds,setOdds]=useState('');
   const submit=()=>{
     const b=bdl.trim();
     if(!b)return;
     localStorage.setItem('betedge_bdlkey',b);
-    onDone(b);
+    localStorage.setItem('betedge_oddskey',odds.trim());
+    onDone(b, odds.trim());
   };
   return e('div',{style:{minHeight:'100vh',background:C.bg,display:'flex',alignItems:'center',justifyContent:'center',padding:20}},
-    e('div',{style:{width:'100%',maxWidth:400}},
+    e('div',{style:{width:'100%',maxWidth:420}},
       e('div',{style:{textAlign:'center',marginBottom:28}},
         e('div',{className:'mono',style:{fontSize:26,color:C.accent,fontWeight:700}},'◈ BetEdge'),
-        e('div',{style:{fontSize:12,color:C.dim,marginTop:6}},'Une seule clé pour tout — matchs, standings & injuries')
+        e('div',{style:{fontSize:12,color:C.dim,marginTop:6}},'Configuration initiale')
       ),
-      e('div',{style:{background:C.card,border:'1px solid '+C.border,borderRadius:12,padding:20,display:'flex',flexDirection:'column',gap:14}},
+      e('div',{style:{background:C.card,border:'1px solid '+C.border,borderRadius:12,padding:20,display:'flex',flexDirection:'column',gap:16}},
+
+        // Clé BallDontLie
         e('div',null,
           e('div',{style:{display:'flex',alignItems:'center',gap:6,marginBottom:8}},
             e('span',{style:{fontSize:16}},'🏀'),
             e('div',null,
               e('div',{style:{fontSize:13,fontWeight:700,color:C.text}},'Clé BallDontLie'),
-              e('div',{style:{fontSize:11,color:C.muted}},'Standings · Matchs · Injuries — tout en un')
+              e('div',{style:{fontSize:11,color:C.muted}},'Standings · Matchs · Injuries NBA')
             )
           ),
-          e('input',{type:'password',placeholder:'Colle ta clé ici…',value:bdl,
+          e('input',{type:'password',placeholder:'Clé balldontlie…',value:bdl,
             onChange:ev=>setBdl(ev.target.value),
             onKeyDown:ev=>ev.key==='Enter'&&submit(),
-            style:{width:'100%',background:C.bg,border:'1px solid '+C.border,borderRadius:7,padding:'10px 12px',color:C.text,fontSize:13,fontFamily:'DM Mono,monospace',outline:'none',marginBottom:8}
+            style:{width:'100%',background:C.bg,border:'1px solid '+C.border,borderRadius:7,padding:'10px 12px',color:C.text,fontSize:13,fontFamily:'DM Mono,monospace',outline:'none',marginBottom:6}
           }),
-          e('div',{style:{background:C.border+'50',borderRadius:8,padding:'10px 12px',fontSize:11,color:C.muted,lineHeight:2}},
-            e('div',null,'1. Va sur ',e('span',{style:{color:C.accent,fontWeight:700}},'app.balldontlie.io')),
-            e('div',null,'2. Connecte-toi ',e('span',{style:{color:C.text,fontWeight:700}},'Account Settings')),
-            e('div',null,'3. Section ',e('span',{style:{color:C.text,fontWeight:700}},'API'),' puis copie ta clé'),
-            e('div',{style:{marginTop:6,color:C.yellow}},'💡 Gratuit · Standings, matchs & injuries NBA')
+          e('div',{style:{fontSize:10,color:C.muted,lineHeight:1.8}},
+            e('div',null,'→ ',e('span',{style:{color:C.accent,fontWeight:700}},'app.balldontlie.io'),' · Account Settings · API')
           )
         ),
+
+        e('div',{style:{borderTop:'1px solid '+C.border}}),
+
+        // Clé The Odds API
+        e('div',null,
+          e('div',{style:{display:'flex',alignItems:'center',gap:6,marginBottom:8}},
+            e('span',{style:{fontSize:16}},'📊'),
+            e('div',null,
+              e('div',{style:{fontSize:13,fontWeight:700,color:C.text}},'Clé The Odds API'),
+              e('div',{style:{fontSize:11,color:C.muted}},'Cotes automatiques Winamax · Unibet · Betclic — optionnel')
+            )
+          ),
+          e('input',{type:'password',placeholder:'Clé the-odds-api.com… (optionnel)',value:odds,
+            onChange:ev=>setOdds(ev.target.value),
+            style:{width:'100%',background:C.bg,border:'1px solid '+C.border,borderRadius:7,padding:'10px 12px',color:C.text,fontSize:13,fontFamily:'DM Mono,monospace',outline:'none',marginBottom:6}
+          }),
+          e('div',{style:{fontSize:10,color:C.muted,lineHeight:1.8}},
+            e('div',null,'→ ',e('span',{style:{color:C.accent,fontWeight:700}},'the-odds-api.com'),' · Get API Key · Free (500 req/mois)')
+          )
+        ),
+
         e('button',{onClick:submit,disabled:!bdl.trim(),
           style:{background:bdl.trim()?C.accent:C.muted,color:C.bg,border:'none',borderRadius:8,padding:'11px',fontSize:13,fontWeight:800,cursor:bdl.trim()?'pointer':'not-allowed'}
         },'Démarrer →')
@@ -374,12 +528,23 @@ function spinner(){
   );
 }
 function liveBadge(loading,error,lastUpdate,refetch){
-  const fmt=d=>d?d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
-  const col=error?C.red:C.accent;
+  const cached=cacheGet('bdl_standings');
+  const cacheTs=cached?JSON.parse(localStorage.getItem('bdl_standings')||'{}').ts:null;
+  const fmtFull=ts=>{
+    if(!ts)return'';
+    const d=new Date(ts);
+    const now=new Date();
+    const sameDay=d.toDateString()===now.toDateString();
+    return sameDay
+      ? d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
+      : d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  };
+  const col=error?C.red:cached?C.yellow:C.accent;
+  const label=loading?'Chargement…':error?'Secours':cached?'Cache · '+fmtFull(cacheTs):'Live · '+fmtFull(Date.now());
   return e('div',{style:{display:'flex',alignItems:'center',gap:5,background:col+'15',border:'1px solid '+col+'30',borderRadius:6,padding:'3px 8px'}},
     loading?e('span',{className:'spin',style:{fontSize:9,color:C.yellow}},'◈'):e('div',{style:{width:5,height:5,borderRadius:'50%',background:col}}),
-    e('span',{style:{fontSize:10,color:col,fontWeight:600}},loading?'Chargement…':error?'Secours':'Live · '+fmt(lastUpdate)),
-    e('button',{onClick:refetch,style:{background:'none',border:'none',color:col,cursor:'pointer',fontSize:13,padding:0,marginLeft:2}},'↻')
+    e('span',{style:{fontSize:10,color:col,fontWeight:600}},label),
+    e('button',{onClick:refetch,title:'Forcer le refresh',style:{background:'none',border:'none',color:col,cursor:'pointer',fontSize:13,padding:0,marginLeft:2}},'↻')
   );
 }
 
@@ -431,11 +596,42 @@ function Dashboard({bets,bankroll,loading,error,lastUpdate,refetch}){
 }
 
 // ─── PRÉDICTIONS ─────────────────────────────────────────────────────────────
-function Predictions({bankroll,nbaS,nbaGames,loading,error,refetch,injuries,injLoading}){
+function Predictions({bankroll,nbaS,nbaGames,loading,error,refetch,injuries,injLoading,oddsData,oddsLoading,fetchOdds,oddsKey,bookOddsAll,setBookOddsAll}){
+  const bookOdds=bookOddsAll;
+  const setBookOdds=setBookOddsAll;
   const [sport,setSport]=useState('NBA');
-  const [bookOdds,setBookOdds]=useState({});
+  // bookOdds/setBookOdds viennent du parent (App) via bookOddsAll/setBookOddsAll
   const [minEdge,setMinEdge]=useState(0);
   const [intWeek,setIntWeek]=useState(false);
+
+  // Fetch cotes automatiques quand le sport change
+  useEffect(()=>{ if(oddsKey) fetchOdds(sport); },[sport,oddsKey]);
+
+  // Fusionner cotes auto dans bookOdds (ne pas écraser les saisies manuelles)
+  useEffect(()=>{
+    const sportOdds = oddsData[sport];
+    if(!sportOdds) return;
+    const gamesMap={NBA:nbaGames,'Rugby Top 14':RUGBY_TOP14_GAMES,'6 Nations':SIX_NATIONS_GAMES,Volleyball:VOLLEY_GAMES};
+    const games = gamesMap[sport]||[];
+    setBookOdds(prev=>{
+      const next={...prev};
+      games.forEach(g=>{
+        const gk=sport+'_'+g.home;
+        // Chercher la correspondance dans les cotes API (nom exact ou partiel)
+        const matchKey=Object.keys(sportOdds).find(k=>
+          k.includes(g.home)||k.startsWith(g.home.split(' ')[0])
+        );
+        if(!matchKey) return;
+        const eventOdds=sportOdds[matchKey];
+        Object.entries(eventOdds).forEach(([bookId,{home,away}])=>{
+          const hk=gk+'_home_'+bookId, ak=gk+'_away_'+bookId;
+          if(!prev[hk]) next[hk]=home.toFixed(2);
+          if(!prev[ak]) next[ak]=away.toFixed(2);
+        });
+      });
+      return next;
+    });
+  },[oddsData,sport,nbaGames]);
 
   if(loading&&sport==='NBA')return spinner();
 
@@ -474,12 +670,21 @@ function Predictions({bankroll,nbaS,nbaGames,loading,error,refetch,injuries,injL
 
     // Sélecteur sport
     e('div',{style:{display:'flex',gap:6,overflowX:'auto',paddingBottom:4}},
-      ...SPORTS.map(s=>e('button',{key:s,onClick:()=>{setSport(s);setIntWeek(false);},style:{background:sport===s?SPORT_META[s].color:C.border,color:sport===s?C.bg:C.text,border:'none',borderRadius:6,padding:'5px 10px',fontSize:11,fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}},SPORT_META[s].icon+' '+s))
+      ...SPORTS.map(s=>e('button',{key:s,onClick:()=>{setSport(s);setIntWeek(false);},style:{background:sport===s?SPORT_META[s]?.color||C.accent:C.border,color:sport===s?C.bg:C.text,border:'none',borderRadius:6,padding:'5px 10px',fontSize:11,fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}},SPORT_META[s]?.icon||''+' '+s))
     ),
 
     // Barre options
     e('div',{style:{display:'flex',alignItems:'center',gap:8,background:C.card,border:'1px solid '+C.border,borderRadius:8,padding:'8px 12px',flexWrap:'wrap'}},
       ...BOOKS.map(b=>e('div',{key:b.id,style:{display:'flex',alignItems:'center',gap:4}},e('div',{style:{width:7,height:7,borderRadius:2,background:b.color}}),e('span',{style:{fontSize:11,fontWeight:600}},b.name))),
+      oddsKey&&e('div',{style:{display:'flex',alignItems:'center',gap:4,marginLeft:4}},
+        oddsLoading
+          ? e('span',{className:'spin',style:{fontSize:9,color:C.accent}},'◈')
+          : e('div',{style:{width:6,height:6,borderRadius:'50%',background:oddsData[sport]?C.accent:C.muted}}),
+        e('span',{style:{fontSize:10,color:oddsData[sport]?C.accent:C.muted,fontWeight:600}},
+          oddsLoading?'Cotes…':oddsData[sport]?'Cotes auto ✓':'Cotes indisponibles'
+        ),
+        e('button',{onClick:()=>fetchOdds(sport,true),title:'Rafraîchir les cotes',style:{background:'none',border:'none',color:C.muted,cursor:'pointer',fontSize:11,padding:0}},'↻')
+      ),
       ['Rugby Top 14','Volleyball'].includes(sport)&&e('button',{onClick:()=>setIntWeek(v=>!v),style:{background:intWeek?C.orange+'20':C.border,border:'1px solid '+(intWeek?C.orange:C.border),color:intWeek?C.orange:C.muted,borderRadius:6,padding:'4px 10px',fontSize:11,fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}},'🌍 Int.'+(intWeek?' ON':' OFF')),
       e('div',{style:{marginLeft:'auto',display:'flex',alignItems:'center',gap:7}},
         e('span',{style:{fontSize:11,color:C.muted}},'Edge ≥'),
@@ -595,7 +800,7 @@ function Standings({nbaS,loading,error,refetch,lastUpdate}){
     e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}},
       e('div',null,e('h2',{style:{fontSize:20,fontWeight:800}},'Classements'),e('p',{style:{fontSize:11,color:C.dim,marginTop:2}},sport==='NBA'?(error?'⚠️ Secours':'⚡ Live · '+fmt(lastUpdate)):'✎ Manuel · Mars 2026')),
       e('div',{style:{display:'flex',gap:5,flexWrap:'wrap',alignItems:'center'}},
-        ...SPORTS.map(s=>e('button',{key:s,onClick:()=>setSport(s),style:{background:sport===s?SPORT_META[s].color:C.border,color:sport===s?C.bg:C.text,border:'none',borderRadius:5,padding:'4px 9px',fontSize:10,fontWeight:700,cursor:'pointer'}},SPORT_META[s].icon)),
+        ...SPORTS.map(s=>e('button',{key:s,onClick:()=>setSport(s),style:{background:sport===s?SPORT_META[s]?.color||C.accent:C.border,color:sport===s?C.bg:C.text,border:'none',borderRadius:5,padding:'4px 9px',fontSize:10,fontWeight:700,cursor:'pointer'}},SPORT_META[s]?.icon||'')),
         sport==='NBA'&&e('button',{onClick:refetch,style:{background:C.border,border:'none',borderRadius:5,padding:'4px 9px',fontSize:12,color:C.accent,cursor:'pointer'}},'↻')
       )
     ),
@@ -738,18 +943,231 @@ function Historique(){
 }
 
 // ─── APP ──────────────────────────────────────────────────────────────────────
-const TABS=[{id:0,label:'Dashboard',icon:'🏠'},{id:1,label:'Prédictions',icon:'🔮'},{id:2,label:'Classements',icon:'📊'},{id:3,label:'Bankroll',icon:'💰'},{id:4,label:'Historique',icon:'📋'}];
+const TABS=[{id:0,label:'Dashboard',icon:'🏠'},{id:1,label:'Prédictions',icon:'🔮'},{id:2,label:'Suggestions',icon:'💡'},{id:3,label:'Classements',icon:'📊'},{id:4,label:'Bankroll',icon:'💰'},{id:5,label:'Historique',icon:'📋'}];
+
+// ─── SUGGESTIONS ─────────────────────────────────────────────────────────────
+function buildAllBets(nbaS, injuries, bankroll, nbaGames){
+  const allSports = ['NBA','Rugby Top 14','6 Nations','Volleyball'];
+  const gamesMap  = {NBA:nbaGames||[], 'Rugby Top 14':RUGBY_TOP14_GAMES, '6 Nations':SIX_NATIONS_GAMES, Volleyball:VOLLEY_GAMES};
+  const bets = [];
+
+  allSports.forEach(sport=>{
+    const games = gamesMap[sport]||[];
+    games.forEach(g=>{
+      const model = computeProb(g.home,g.away,sport,nbaS,injuries,{homeB2B:g.homeB2B||false,awayB2B:g.awayB2B||false},false);
+      ['home','away'].forEach(side=>{
+        const prob  = side==='home'?model.home:model.away;
+        const team  = side==='home'?g.home:g.away;
+        bets.push({sport,league:g.league||sport,match:g.home+' vs '+g.away,team,side,prob,date:g.date,odds:0,bookId:'',bookName:'',edge:null,kellyStake:0,ev:0,confidence:0});
+      });
+    });
+  });
+  return bets;
+}
+
+function confidence(prob, edge, odds){
+  // Score 0-100 : combinaison prob haute + edge fort + cote raisonnable
+  const pScore  = Math.min(100, prob);
+  const eScore  = Math.min(100, Math.max(0, edge*5));
+  const oScore  = odds>=1.5&&odds<=4 ? 100 : odds<1.5 ? 60 : 70;
+  return Math.round(pScore*0.4 + eScore*0.4 + oScore*0.2);
+}
+
+function generateCombos(singles, maxLegs=3, maxCombos=5){
+  const combos=[];
+  const eligible=singles.filter(s=>s.edge>0&&s.odds>=1.3);
+  // Générer combos 2 et 3 sélections
+  for(let i=0;i<eligible.length&&combos.length<maxCombos*2;i++){
+    for(let j=i+1;j<eligible.length&&combos.length<maxCombos*2;j++){
+      if(eligible[i].match===eligible[j].match) continue; // pas 2 sélections du même match
+      const legs=[eligible[i],eligible[j]];
+      const combOdds=legs.reduce((p,l)=>p*l.odds,1);
+      const combProb=legs.reduce((p,l)=>p*(l.prob/100),1)*100;
+      const combEdge=calcEdge(combProb,combOdds)*100;
+      if(combEdge>0) combos.push({legs,combOdds,combProb,combEdge,type:'Double'});
+    }
+  }
+  // Triples
+  for(let i=0;i<Math.min(eligible.length,6)&&combos.length<maxCombos*2;i++){
+    for(let j=i+1;j<Math.min(eligible.length,6)&&combos.length<maxCombos*2;j++){
+      for(let k=j+1;k<Math.min(eligible.length,6)&&combos.length<maxCombos*2;k++){
+        const s=eligible;
+        if(s[i].match===s[j].match||s[i].match===s[k].match||s[j].match===s[k].match) continue;
+        const legs=[s[i],s[j],s[k]];
+        const combOdds=legs.reduce((p,l)=>p*l.odds,1);
+        const combProb=legs.reduce((p,l)=>p*(l.prob/100),1)*100;
+        const combEdge=calcEdge(combProb,combOdds)*100;
+        if(combEdge>0) combos.push({legs,combOdds,combProb,combEdge,type:'Triple'});
+      }
+    }
+  }
+  return combos.sort((a,b)=>b.combEdge-a.combEdge).slice(0,maxCombos);
+}
+
+function Suggestions({nbaS,injuries,bankroll,bookOddsAll,nbaGames}){
+  const [minOdds,setMinOdds]=useState(1.5);
+  const [minConf,setMinConf]=useState(50);
+  const [showCombos,setShowCombos]=useState(true);
+
+  const allBets = buildAllBets(nbaS,injuries,bankroll,nbaGames);
+
+  // Injecter les cotes depuis bookOddsAll et calculer edge/kelly
+  const enriched = allBets.map(b=>{
+    const gk = b.sport+'_'+b.match.split(' vs ')[0];
+    let bestO=0, bestBook='', bestBookId='';
+    BOOKS.forEach(bk=>{
+      const key = gk+'_'+b.side+'_'+bk.id;
+      const o   = parseFloat(bookOddsAll[key])||0;
+      if(o>bestO){bestO=o;bestBook=bk.name;bestBookId=bk.id;}
+    });
+    if(!bestO) return null; // exclure si pas de cote
+    const edge  = calcEdge(b.prob, bestO)*100;
+    const kStake= kelly(bankroll, b.prob, bestO);
+    const ev    = (b.prob/100)*bestO - 1;
+    const conf  = confidence(b.prob, edge, bestO);
+    return {...b, odds:bestO, bookName:bestBook, bookId:bestBookId, edge, kellyStake:kStake, ev, confidence:conf};
+  }).filter(b=>b&&b.kellyStake>0&&b.odds>=minOdds&&b.confidence>=minConf)
+    .sort((a,b)=>b.confidence-a.confidence);
+
+  const combos = showCombos ? generateCombos(enriched) : [];
+
+  const confColor = c => c>=75?C.accent:c>=55?C.yellow:C.red;
+  const confLabel = c => c>=75?'Forte':c>=55?'Moyenne':'Faible';
+
+  return e('div',{style:{display:'flex',flexDirection:'column',gap:14}},
+    e('div',null,
+      e('h2',{style:{fontSize:20,fontWeight:800}},'💡 Suggestions de Paris'),
+      e('p',{style:{fontSize:11,color:C.dim,marginTop:2}},'Basé sur le modèle · Kelly positif obligatoire · Cotes renseignées uniquement')
+    ),
+
+    // Filtres
+    e('div',{style:{display:'flex',alignItems:'center',gap:12,background:C.card,border:'1px solid '+C.border,borderRadius:8,padding:'10px 14px',flexWrap:'wrap'}},
+      e('div',{style:{display:'flex',alignItems:'center',gap:6}},
+        e('span',{style:{fontSize:11,color:C.muted}},'Cote min :'),
+        e('input',{type:'range',min:1.1,max:3,step:.05,value:minOdds,onChange:ev=>setMinOdds(+ev.target.value),style:{width:70}}),
+        e('span',{className:'mono',style:{fontSize:12,color:C.yellow}},minOdds.toFixed(2))
+      ),
+      e('div',{style:{display:'flex',alignItems:'center',gap:6}},
+        e('span',{style:{fontSize:11,color:C.muted}},'Confiance min :'),
+        e('input',{type:'range',min:0,max:90,step:5,value:minConf,onChange:ev=>setMinConf(+ev.target.value),style:{width:70}}),
+        e('span',{className:'mono',style:{fontSize:12,color:C.yellow}},minConf+'%')
+      ),
+      e('button',{onClick:()=>setShowCombos(v=>!v),style:{background:showCombos?C.accent+'20':C.border,border:'1px solid '+(showCombos?C.accent:C.border),color:showCombos?C.accent:C.muted,borderRadius:6,padding:'4px 10px',fontSize:11,fontWeight:700,cursor:'pointer'}},
+        '🎲 Combinés '+(showCombos?'ON':'OFF')
+      )
+    ),
+
+    // ── PARIS SIMPLES ──────────────────────────────────────────────────────
+    e('div',{style:{fontWeight:800,fontSize:14,color:C.text}},'🎯 Paris simples'),
+    enriched.length===0
+      ? card(e('p',{style:{color:C.dim,textAlign:'center',padding:16,fontSize:12}},'Aucun pari valide · Renseigne les cotes dans l\'onglet Prédictions'))
+      : e('div',{style:{display:'flex',flexDirection:'column',gap:8}},
+          ...enriched.map((b,i)=>
+            card(e('div',{style:{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}},
+              // Rang
+              e('div',{className:'mono',style:{fontSize:18,fontWeight:800,color:C.muted,minWidth:28}},('#'+(i+1))),
+              // Info match
+              e('div',{style:{flex:3,minWidth:160}},
+                e('div',{style:{display:'flex',alignItems:'center',gap:6,marginBottom:3,flexWrap:'wrap'}},
+                  chip(SPORT_META[b.sport]?.icon+' '+b.league,SPORT_META[b.sport]?.color||C.accent,true),
+                  chip(b.date,C.blue,true)
+                ),
+                e('div',{style:{fontWeight:700,fontSize:13}},b.team),
+                e('div',{style:{fontSize:11,color:C.muted}},b.match+' · '+b.bookName)
+              ),
+              // Stats
+              e('div',{style:{display:'flex',gap:10,flexWrap:'wrap'}},
+                e('div',{style:{textAlign:'center'}},
+                  e('div',{style:{fontSize:9,color:C.muted,marginBottom:2}},'PROBA'),
+                  e('div',{className:'mono',style:{fontSize:15,fontWeight:800,color:C.blue}},b.prob.toFixed(0)+'%')
+                ),
+                e('div',{style:{textAlign:'center'}},
+                  e('div',{style:{fontSize:9,color:C.muted,marginBottom:2}},'COTE'),
+                  e('div',{className:'mono',style:{fontSize:15,fontWeight:800,color:C.yellow}},b.odds.toFixed(2))
+                ),
+                e('div',{style:{textAlign:'center'}},
+                  e('div',{style:{fontSize:9,color:C.muted,marginBottom:2}},'EDGE'),
+                  e('div',{className:'mono',style:{fontSize:15,fontWeight:800,color:b.edge>0?C.accent:C.red}},(b.edge>0?'+':'')+b.edge.toFixed(1)+'%')
+                ),
+                e('div',{style:{textAlign:'center'}},
+                  e('div',{style:{fontSize:9,color:C.muted,marginBottom:2}},'EV'),
+                  e('div',{className:'mono',style:{fontSize:13,fontWeight:700,color:b.ev>0?C.accent:C.red}},(b.ev>=0?'+':'')+( b.ev*100).toFixed(1)+'%')
+                )
+              ),
+              // Confiance + Kelly
+              e('div',{style:{textAlign:'center',minWidth:90}},
+                e('div',{style:{fontSize:9,color:C.muted,marginBottom:4}},'CONFIANCE'),
+                e('div',{style:{background:confColor(b.confidence)+'20',border:'1px solid '+confColor(b.confidence)+'50',borderRadius:6,padding:'4px 8px'}},
+                  e('div',{className:'mono',style:{fontSize:16,fontWeight:800,color:confColor(b.confidence)}},b.confidence+'%'),
+                  e('div',{style:{fontSize:9,color:confColor(b.confidence),fontWeight:700}},confLabel(b.confidence))
+                )
+              ),
+              e('div',{style:{background:C.accent,color:C.bg,borderRadius:8,padding:'8px 12px',textAlign:'center',minWidth:80}},
+                e('div',{style:{fontSize:9,fontWeight:700,marginBottom:2}},'KELLY'),
+                e('div',{className:'mono',style:{fontSize:16,fontWeight:800}},b.kellyStake.toFixed(1)+'€')
+              )
+            ),{padding:'12px 14px'})
+          )
+        ),
+
+    // ── COMBINÉS ───────────────────────────────────────────────────────────
+    showCombos&&e('div',{style:{fontWeight:800,fontSize:14,color:C.text,marginTop:6}},'🎲 Combinés suggérés'),
+    showCombos&&(combos.length===0
+      ? card(e('p',{style:{color:C.dim,textAlign:'center',padding:16,fontSize:12}},'Pas assez de paris valides pour générer des combinés'))
+      : e('div',{style:{display:'flex',flexDirection:'column',gap:8}},
+          ...combos.map((c,i)=>
+            card(e('div',null,
+              e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10,flexWrap:'wrap',gap:8}},
+                e('div',{style:{display:'flex',alignItems:'center',gap:8}},
+                  chip(c.type,C.purple,false),
+                  e('span',{className:'mono',style:{fontSize:14,fontWeight:800,color:C.yellow}},c.combOdds.toFixed(2)),
+                  e('span',{style:{fontSize:11,color:C.muted}},'· Proba '+c.combProb.toFixed(1)+'%')
+                ),
+                e('div',{style:{display:'flex',gap:10,alignItems:'center'}},
+                  e('div',{style:{textAlign:'right'}},
+                    e('div',{style:{fontSize:9,color:C.muted}},'EDGE COMBINÉ'),
+                    e('div',{className:'mono',style:{fontSize:15,fontWeight:800,color:c.combEdge>0?C.accent:C.red}},(c.combEdge>0?'+':'')+c.combEdge.toFixed(1)+'%')
+                  ),
+                  e('div',{style:{background:C.purple,color:'#fff',borderRadius:8,padding:'6px 12px',textAlign:'center'}},
+                    e('div',{style:{fontSize:9,fontWeight:700,marginBottom:1}},'MISE SUGGÉRÉE'),
+                    e('div',{className:'mono',style:{fontSize:15,fontWeight:800}},Math.max(1,kelly(bankroll,c.combProb,c.combOdds)).toFixed(1)+'€')
+                  )
+                )
+              ),
+              e('div',{style:{display:'flex',flexDirection:'column',gap:5}},
+                ...c.legs.map((l,li)=>
+                  e('div',{key:li,style:{display:'flex',alignItems:'center',gap:8,background:C.border+'40',borderRadius:6,padding:'6px 10px'}},
+                    e('span',{style:{fontSize:11,color:C.muted,minWidth:16}},(li+1)+'.'),
+                    e('span',{style:{fontSize:11,color:SPORT_META[l.sport]?.color}},SPORT_META[l.sport]?.icon),
+                    e('span',{style:{fontSize:12,fontWeight:700}},l.team),
+                    e('span',{style:{fontSize:11,color:C.muted}},l.match),
+                    e('span',{className:'mono',style:{fontSize:12,color:C.yellow,marginLeft:'auto'}},l.odds.toFixed(2))
+                  )
+                )
+              )
+            ),{padding:'12px 14px'})
+          )
+        )
+    )
+  );
+}
 
 function App(){
   const [tab,setTab]=useState(0);
   const [bankroll,setBankroll]=useState(1000);
   const [bdlKey,setBdlKey]=useState(()=>localStorage.getItem('betedge_bdlkey'));
-  const [rapidKey]=useState(''); // conservé pour le badge injuries
+  const [oddsKey]=useState(()=>localStorage.getItem('betedge_oddskey')||'');
+  const [rapidKey]=useState('');
+  const [bookOddsAll,setBookOddsAll]=useState({}); // partagé Prédictions → Suggestions
   const {standings:nbaS,games:nbaGames,injuries,injLoading,loading,error,refetch,lastUpdate}=useNBAData(bdlKey||'');
+  const {oddsData,oddsLoading,fetchOdds}=useOddsAPI(oddsKey);
 
-  // Premier lancement : setup
   if(bdlKey===null){
-    return e(SetupScreen,{onDone:b=>{setBdlKey(b);}});
+    return e(SetupScreen,{onDone:(b,o)=>{
+      localStorage.setItem('betedge_bdlkey',b);
+      if(o)localStorage.setItem('betedge_oddskey',o);
+      setBdlKey(b);
+    }});
   }
 
   const bets=[
@@ -777,10 +1195,11 @@ function App(){
     // Content
     e('div',{style:{padding:'16px 16px 90px',maxWidth:1050,margin:'0 auto'}},
       tab===0&&e(Dashboard,{bets,bankroll,loading,error,lastUpdate,refetch}),
-      tab===1&&e(Predictions,{bankroll,nbaS,nbaGames,loading,error,refetch,injuries,injLoading}),
-      tab===2&&e(Standings,{nbaS,loading,error,refetch,lastUpdate}),
-      tab===3&&e(Bankroll,{bankroll,setBankroll}),
-      tab===4&&e(Historique)
+      tab===1&&e(Predictions,{bankroll,nbaS,nbaGames,loading,error,refetch,injuries,injLoading,oddsData,oddsLoading,fetchOdds,oddsKey,bookOddsAll,setBookOddsAll}),
+      tab===2&&e(Suggestions,{nbaS,injuries,bankroll,bookOddsAll,nbaGames}),
+      tab===3&&e(Standings,{nbaS,loading,error,refetch,lastUpdate}),
+      tab===4&&e(Bankroll,{bankroll,setBankroll}),
+      tab===5&&e(Historique)
     ),
     // Bottom nav
     e('nav',{className:'bottom-nav'},
